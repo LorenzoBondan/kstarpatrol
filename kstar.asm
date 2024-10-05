@@ -145,6 +145,7 @@ PRINT_OPTIONS proc
     ret
 endp
 
+
 ; Parametros
 ; bh: opcao selecionada 
 ;   zero: Jogar
@@ -171,9 +172,63 @@ PRINT_OPTION_SELECTED_JOGAR:
     
 PRINT_OPTION_SELECTED_PRINT:
     
-    ; ------ caixa jogar
+    call DESENHAR_CAIXA_JOGAR
+    call DESENHAR_CAIXA_SAIR
     
-    ; Printar in?cio da caixa
+    ; Reimprimir o texto dentro da caixa
+    ; Verifica qual op??o est? selecionada
+    or bh, bh
+    jz PRINT_OPTION_JOGAR
+    
+    ; Sair est? selecionado
+    mov bp, offset sair
+    mov dh, 23
+    mov dl, 17
+    mov cx, 4
+    mov bl, 0CH ; vermelho
+    call PRINT_TEXT
+
+    ; Jogar n?o est? selecionado
+    mov bp, offset jogar
+    mov dh, 20
+    mov dl, 17
+    mov cx, 5
+    mov bl, 0FH ; Branco
+    call PRINT_TEXT
+    
+    jmp PRINT_OPTION_END
+    
+PRINT_OPTION_JOGAR:
+    ; Jogar est? selecionado
+    mov bp, offset jogar
+    mov dh, 20
+    mov dl, 17
+    mov cx, 5
+    mov bl, 0CH ; vermelho
+    call PRINT_TEXT
+    
+    ; sair n?o est? selecionado
+    mov bp, offset sair
+    mov dh, 23
+    mov dl, 17
+    mov cx, 4
+    mov bl, 0FH ; branco
+    call PRINT_TEXT
+    
+    jmp PRINT_OPTION_END
+    
+PRINT_OPTION_END:
+    pop bx
+    pop cx
+    pop dx
+    pop bp
+    pop ax
+    ret
+endp
+
+DESENHAR_CAIXA_JOGAR proc
+
+; Printar in?cio da caixa
     mov bp, offset cornerTopLeft ; Text to print
     mov dl, 15 ; Column to print
     mov bl, 15 ; Color
@@ -316,8 +371,11 @@ PRINT_OPTION_SELECTED_PRINT:
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
-    ; --------- caixa sair
-    
+    ret
+endp
+
+DESENHAR_CAIXA_SAIR proc
+
     ; Printar in?cio da caixa
     mov dh, 22
     mov bp, offset cornerTopLeft ; Text to print
@@ -461,52 +519,7 @@ PRINT_OPTION_SELECTED_PRINT:
     mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
-    
-    ; Reimprimir o texto dentro da caixa
-    ; Verifica qual op??o est? selecionada
-    or bh, bh
-    jz PRINT_OPTION_JOGAR
-    
-    ; Sair est? selecionado
-    mov bp, offset sair
-    mov dh, 23
-    mov dl, 17
-    mov cx, 4
-    mov bl, 0CH ; vermelho
-    call PRINT_TEXT
-    jmp PRINT_OPTION_END
-    
-    ; Jogar n?o est? selecionado
-    mov bp, offset jogar
-    mov dh, 20
-    mov dl, 17
-    mov cx, 5
-    mov bl, 0FH ; Branco
-    call PRINT_TEXT
-    
-PRINT_OPTION_JOGAR:
-    ; Jogar est? selecionado
-    mov bp, offset jogar
-    mov dh, 20
-    mov dl, 17
-    mov cx, 5
-    mov bl, 0CH ; vermelho
-    call PRINT_TEXT
-    
-    ; sair n?o est? selecionado
-    mov bp, offset sair
-    mov dh, 23
-    mov dl, 17
-    mov cx, 4
-    mov bl, 0FH ; branco
-    call PRINT_TEXT
-    
-PRINT_OPTION_END:
-    pop bx
-    pop cx
-    pop dx
-    pop bp
-    pop ax
+
     ret
 endp
 
