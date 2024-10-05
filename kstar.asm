@@ -156,67 +156,95 @@ PRINT_OPTION_SELECTED proc
     push dx
     push cx
     push bx
-    
-    ; Determina qual linha esta selecionada
+
+    ; Determina qual linha est? selecionada
     or bh, bh
     jz PRINT_OPTION_SELECTED_JOGAR
-    ; Sair selecionado (Configura a linha)
-    mov dh, 22 ; Line to print selected
-    mov al, 19 ; Line to print deselected
-    jmp PRINT_OPTION_SELECTED_PRINT
     
+    ; Se n?o for "JOGAR", ? "SAIR"
+    ; Sair selecionado (Configura a linha)
+    mov dh, 22 ; Linha de "SAIR" selecionada
+    mov al, 19 ; Linha de "JOGAR" n?o selecionada
+    jmp PRINT_OPTION_SELECTED_PRINT
+
 PRINT_OPTION_SELECTED_JOGAR:
     ; Jogar Selecionado (Configura a linha)
-    mov dh, 19 ; Line to print selected
-    mov al, 22 ; Line to print deselected   
-    
+    mov dh, 19 ; Linha de "JOGAR" selecionada
+    mov al, 22 ; Linha de "SAIR" n?o selecionada  
+
 PRINT_OPTION_SELECTED_PRINT:
-    
+    ; Desenha a caixa de "JOGAR", define a cor dependendo se est? selecionado ou n?o
+    or bh, bh
+    jz SELECTED_JOGAR
+    ; N?o selecionado
+    mov bl, 0FH  ; Branco para n?o selecionado
     call DESENHAR_CAIXA_JOGAR
+    jmp PRINT_OPTION_SELECTED_CONTINUE
+
+SELECTED_JOGAR:
+    mov bl, 0CH  ; Vermelho para selecionado
+    call DESENHAR_CAIXA_JOGAR
+
+PRINT_OPTION_SELECTED_CONTINUE:
+
+    ; Desenha a caixa de "SAIR", define a cor dependendo se est? selecionado ou n?o
+    or bh, bh
+    jnz SELECTED_SAIR
+    ; "SAIR" n?o est? selecionado
+    mov bl, 0FH  ; Branco para n?o selecionado
     call DESENHAR_CAIXA_SAIR
-    
+    jmp PRINT_OPTION_SELECTED_FINISH
+
+SELECTED_SAIR:
+    mov bl, 0CH  ; Vermelho para "SAIR" selecionado
+    call DESENHAR_CAIXA_SAIR
+
+PRINT_OPTION_SELECTED_FINISH:
+
     ; Reimprimir o texto dentro da caixa
     ; Verifica qual op??o est? selecionada
     or bh, bh
     jz PRINT_OPTION_JOGAR
-    
-    ; Sair est? selecionado
+
+    ; "SAIR" est? selecionado
     mov bp, offset sair
     mov dh, 23
     mov dl, 17
     mov cx, 4
-    mov bl, 0CH ; vermelho
+    mov bl, 0CH ; Vermelho para "SAIR"
     call PRINT_TEXT
 
-    ; Jogar n?o est? selecionado
+    ; "JOGAR" n?o est? selecionado
     mov bp, offset jogar
     mov dh, 20
     mov dl, 17
     mov cx, 5
-    mov bl, 0FH ; Branco
+    mov bl, 0FH ; Branco para "JOGAR"
     call PRINT_TEXT
     
+    dec dh ; adicionei isso aqui
+    call DESENHAR_CAIXA_JOGAR ; e isso aqui
+
     jmp PRINT_OPTION_END
     
 PRINT_OPTION_JOGAR:
-    ; Jogar est? selecionado
+
+    ; "JOGAR" est? selecionado
     mov bp, offset jogar
     mov dh, 20
     mov dl, 17
     mov cx, 5
-    mov bl, 0CH ; vermelho
+    mov bl, 0CH ; Vermelho para "JOGAR"
     call PRINT_TEXT
-    
-    ; sair n?o est? selecionado
+
+    ; "SAIR" n?o est? selecionado
     mov bp, offset sair
     mov dh, 23
     mov dl, 17
     mov cx, 4
-    mov bl, 0FH ; branco
+    mov bl, 0FH ; Branco para "SAIR"
     call PRINT_TEXT
-    
-    jmp PRINT_OPTION_END
-    
+
 PRINT_OPTION_END:
     pop bx
     pop cx
@@ -226,68 +254,69 @@ PRINT_OPTION_END:
     ret
 endp
 
+
 DESENHAR_CAIXA_JOGAR proc
 
 ; Printar in?cio da caixa
     mov bp, offset cornerTopLeft ; Text to print
     mov dl, 15 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; Printar topo da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 16 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; Printar topo da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 17 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; Printar topo da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 18 ; Column to print
-    mov bl, 15 ; Color
+    ; mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; Printar topo da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 19 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; Printar topo da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 20 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; Printar topo da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 21 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
       ; Printar topo da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 22 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; Printar canto superior direito da caixa
     mov bp, offset cornerTopRight ; Text to print
     mov dl, 23 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
@@ -295,7 +324,7 @@ DESENHAR_CAIXA_JOGAR proc
     inc dh ; desce a linha
     mov bp, offset verticalLine ; Text to print
     mov dl, 23 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
@@ -303,63 +332,63 @@ DESENHAR_CAIXA_JOGAR proc
     inc dh ; desce a linha
     mov bp, offset cornerBottomRight ; Text to print
     mov dl, 23 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; printar base da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 22 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; printar base da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 21 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; printar base da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 20 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; printar base da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 19 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; printar base da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 18 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; printar base da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 17 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; printar base da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 16 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; Printar canto inferior esquerdo da caixa
     mov bp, offset cornerBottomLeft ; Text to print
     mov dl, 15 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
@@ -367,7 +396,7 @@ DESENHAR_CAIXA_JOGAR proc
     dec dh ; sobre a linha
     mov bp, offset verticalLine ; Text to print
     mov dl, 15 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
@@ -380,63 +409,63 @@ DESENHAR_CAIXA_SAIR proc
     mov dh, 22
     mov bp, offset cornerTopLeft ; Text to print
     mov dl, 15 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; Printar topo da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 16 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; Printar topo da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 17 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; Printar topo da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 18 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; Printar topo da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 19 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; Printar topo da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 20 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; Printar topo da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 21 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
       ; Printar topo da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 22 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; Printar canto superior direito da caixa
     mov bp, offset cornerTopRight ; Text to print
     mov dl, 23 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
@@ -444,7 +473,7 @@ DESENHAR_CAIXA_SAIR proc
     inc dh ; desce a linha
     mov bp, offset verticalLine ; Text to print
     mov dl, 23 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
@@ -452,63 +481,63 @@ DESENHAR_CAIXA_SAIR proc
     inc dh ; desce a linha
     mov bp, offset cornerBottomRight ; Text to print
     mov dl, 23 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; printar base da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 22 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; printar base da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 21 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; printar base da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 20 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; printar base da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 19 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; printar base da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 18 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; printar base da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 17 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; printar base da caixa
     mov bp, offset horizontalLine ; Text to print
     mov dl, 16 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
     ; Printar canto inferior esquerdo da caixa
     mov bp, offset cornerBottomLeft ; Text to print
     mov dl, 15 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
     
@@ -516,7 +545,7 @@ DESENHAR_CAIXA_SAIR proc
     dec dh ; sobre a linha
     mov bp, offset verticalLine ; Text to print
     mov dl, 15 ; Column to print
-    mov bl, 15 ; Color
+    ;mov bl, 15 ; Color
     mov cx, 1 ; Size of string printed
     call PRINT_TEXT
 
