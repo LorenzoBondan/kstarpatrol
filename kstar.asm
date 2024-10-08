@@ -25,15 +25,32 @@ model small
     cornerBottomRight db 217 ; ?
     horizontalLine db 196 ; ?
     verticalLine db 179 ; ?
+    
+    ; Constantes de Posicoes de memoria 
+    memoria_video equ 0A000h
+    
+    ; Defini??o do desenho da nave
+    desenho_nave db 0Fh,0Fh,0Fh,0Fh,0Fh, 4 , 4 , 4 , 0 , 0
+                 db 0Fh,0Fh,0Fh,0Fh,0Fh, 0 , 0 , 0 , 0 , 0
+                 db  0 ,0Fh,0Fh,0Fh, 0 , 0 , 0 , 0 , 0 , 0
+                 db  0 , 4 ,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh, 0 , 0
+                 db  0 , 0 , 4 ,0Fh, 1 , 1 ,0Fh,0Fh,0Fh, 4
+                 db  0 , 0 , 4 ,0Fh, 1 , 1 ,0Fh,0Fh,0Fh, 4
+                 db  0 , 4 ,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh, 0 , 0
+                 db  0 ,0Fh,0Fh,0Fh, 0 , 0 , 0 , 0 , 0 , 0
+                 db 0Fh,0Fh,0Fh,0Fh,0Fh, 0 , 0 , 0 , 0 , 0
+                 db 0Fh,0Fh,0Fh,0Fh,0Fh, 4 , 4 , 4 , 0 , 0
+                 
    
-    gameName db "  _  __   ___ _            ", CR, LF
-             db " | |/ /__/ __| |_ __ _ _ _ ", CR, LF
-             db " | ' <___\__ \  _/ _` | '_|", CR, LF
-             db " |____\  |___/\__\__,_|_|  ", CR, LF
-             db " | _ \__ _| |_ _ _ ___| |  ", CR, LF
-             db " |  _/ _` |  _| '_/ _ \ |  ", CR, LF
-             db " |_| \__,_|\__|_| \___/_|  ", CR, LF
+    gameName db "         _  __   ___ _            ", CR, LF
+             db "        | |/ /__/ __| |_ __ _ _ _ ", CR, LF
+             db "        | ' <___\__ \  _/ _` | '_|", CR, LF
+             db "        |____\  |___/\__\__,_|_|  ", CR, LF
+             db "        | _ \__ _| |_ _ _ ___| |  ", CR, LF
+             db "        |  _/ _` |  _| '_/ _ \ |  ", CR, LF
+             db "        |_| \__,_|\__|_| \___/_|  ", CR, LF
              
+          
 .code
 
 ;-----------------------------------------------------------------------------------------------;
@@ -43,8 +60,10 @@ model small
 ;-----------------------------------------------------------------------------------------------;
 
 SET_VIDEO_MODE proc
+    push ax
     mov ax, 13h ; 13h (modo de v?deo 320 x 200 ) 320 colunas e 200 linhas, cada pixel 1 byte, total de 64000 bytes
-    int 10h         
+    int 10h
+    pop ax
     ret
 endp
 
@@ -387,7 +406,6 @@ DESENHAR_CAIXA proc
     ret
 endp
 
-
 ; Sem parametros
 ; Retorno
 ; bh 
@@ -397,36 +415,72 @@ endp
 MENU_INICIAL proc
 
     call PRINT_GAME_NAME  
-
     call PRINT_OPTIONS
     
-    xor bh, bh ; Seta opcao para Jogar
+    xor bh, bh ; Seta opcao para Jogar inicialmente (0 = JOGAR, 1 = SAIR)
+    
+    ; Configurar a posi??o da nave (por exemplo, centro da tela)
+    mov di, 95*320 + 0       ; Posi??o inicial da nave
+    call DESENHA_NAVE            ; Desenha a nave nessa posi??o
     
 MENU_INICIAL_CONTROLE:
     call PRINT_OPTION_SELECTED
-    mov ah, 00h   ; Input do teclado (considera as setas)
-    int 16h
+    mov ah, 00h   ; Chama a fun??o de input do teclado (INT 16h)
+    int 16h       ; Captura a tecla pressionada
     
-    ; Enter
-    cmp ah, accept 
+    ; Verifica se a tecla pressionada foi Enter (ASCII)
+    cmp al, accept 
     jz MENU_INICIAL_ACCEPT
     
-    ; Seta para cima ou para baixo
+    ; Verifica as setas (c?digos de scan de teclas especiais)
     cmp ah, upArrow 
     jz MENU_INICIAL_TOGGLE_OPTION
     cmp ah, downArrow
     jz MENU_INICIAL_TOGGLE_OPTION
-    
-    ; Qualquer outra tecla
+
+    ; Continua o loop do menu
     jmp MENU_INICIAL_CONTROLE
     
 ; Acao das setas
 MENU_INICIAL_TOGGLE_OPTION:
-    not bh
+    not bh                ; Inverte o valor de bh (0 para 1 ou 1 para 0)
     jmp MENU_INICIAL_CONTROLE
     
-; Acao de aceitar
+; Acao de aceitar (Enter foi pressionado)
 MENU_INICIAL_ACCEPT:
+    ret
+endp
+
+; Procedimento para desenhar a nave em uma posi??o passada em DI (di = Y * 320 + X) onde Y: A linha desejada e X: A coluna desejada.
+DESENHA_NAVE proc
+    ; DI j? deve conter a posi??o ao chamar esta fun??o
+    mov si, offset desenho_nave   ; Carrega o offset da nave
+    call DESENHA_ELEMENTO         ; Chama a fun??o que desenha na posi??o definida
+    ret
+endp
+
+; Fun??o para desenhar objetos
+; SI: Posi??o do desenho na mem?ria
+; DI: Posi??o do primeiro pixel do desenho no v?deo (c?lculo do endere?o de v?deo)
+DESENHA_ELEMENTO proc
+    push dx
+    push cx
+    push di
+    push si
+    
+    mov dx, 10                  ; Altura do desenho (10 linhas)
+DESENHA_ELEMENTO_LOOP:
+    mov cx, 10                  ; Largura do desenho (10 colunas)
+    rep movsb                   ; Move 10 bytes de SI para DI (desenha uma linha)
+    dec dx                      ; Decrementa o contador de linhas
+    add di, 310                 ; Pula para a pr?xima linha (320 - 10 = 310)
+    cmp dx, 0                   ; Verifica se j? desenhou todas as linhas
+    jnz DESENHA_ELEMENTO_LOOP   ; Continua at? desenhar todas as linhas
+    
+    pop si
+    pop di
+    pop cx
+    pop dx
     ret
 endp
     
@@ -434,10 +488,10 @@ INICIO:
 
     mov ax, @data
     mov ds, ax
+    mov ax, memoria_video
     mov es, ax
     
     call SET_VIDEO_MODE
-
     call MENU_INICIAL
     
     or bh, bh ; Verifica opcao selecionada (se deve sair do jogo)
