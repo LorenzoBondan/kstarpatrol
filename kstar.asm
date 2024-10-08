@@ -30,18 +30,19 @@ model small
     memoria_video equ 0A000h
     
     ; Defini??o do desenho da nave
-    desenho_nave db 0Fh,0Fh,0Fh,0Fh,0Fh, 4 , 4 , 4 , 0 , 0
-                 db 0Fh,0Fh,0Fh,0Fh,0Fh, 0 , 0 , 0 , 0 , 0
-                 db  0 ,0Fh,0Fh,0Fh, 0 , 0 , 0 , 0 , 0 , 0
-                 db  0 , 4 ,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh, 0 , 0
-                 db  0 , 0 , 4 ,0Fh, 1 , 1 ,0Fh,0Fh,0Fh, 4
-                 db  0 , 0 , 4 ,0Fh, 1 , 1 ,0Fh,0Fh,0Fh, 4
-                 db  0 , 4 ,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh, 0 , 0
-                 db  0 ,0Fh,0Fh,0Fh, 0 , 0 , 0 , 0 , 0 , 0
-                 db 0Fh,0Fh,0Fh,0Fh,0Fh, 0 , 0 , 0 , 0 , 0
-                 db 0Fh,0Fh,0Fh,0Fh,0Fh, 4 , 4 , 4 , 0 , 0
-                 
-   
+    desenho_nave db 0,0,0Fh,0Fh,0Fh,0Fh,0Fh,0,0,0,0,0Fh,3,3,3,0,0,0,0,0,0Fh,3,3,0Fh,0,0,0,0,0,0,3,3,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0,0,3,0Fh,0Fh,0Fh,0Fh,1,1,0Fh,0Fh,0Fh,3,0Fh,0Fh,0Fh,0Fh,1,1,0Fh,0Fh,0Fh,3,3,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0,0,0Fh,3,3,0Fh,0,0,0,0,0,0,0,0Fh,3,3,3,0,0,0,0,0,0,0,0Fh,0Fh,0Fh,0Fh,0Fh,0,0,0    
+                     
+    spaceshipSprite db 0 , 0 , 4 , 4 , 4 ,0Fh,0Fh,0Fh,0Fh,0Fh
+                    db 0 , 0 , 0 , 0 , 0 ,0Fh,0Fh,0Fh,0Fh,0Fh
+                    db 0 , 0 , 0 , 0 , 0 , 0 ,0Fh,0Fh,0Fh, 0
+                    db 0 , 0 ,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh, 4 , 0
+                    db 4 ,0Fh,0Fh,0Fh, 1 , 1 ,0Fh, 4 , 0 , 0
+                    db 4 ,0Fh,0Fh,0Fh, 1 , 1 ,0Fh, 4 , 0 , 0
+                    db 0 , 0 ,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh, 4 , 0 
+                    db 0 , 0 , 0 , 0 , 0 , 0 ,0Fh,0Fh,0Fh, 0 
+                    db 0 , 0 , 0 , 0 , 0 , 0Fh,0Fh,0Fh,0Fh,0Fh
+                    db 0 , 0 , 4 , 4 , 4 , 0Fh,0Fh,0Fh,0Fh,0Fh
+
     gameName db "         _  __   ___ _            ", CR, LF
              db "        | |/ /__/ __| |_ __ _ _ _ ", CR, LF
              db "        | ' <___\__ \  _/ _` | '_|", CR, LF
@@ -423,6 +424,9 @@ MENU_INICIAL proc
     mov di, 95*320 + 0       ; Posi??o inicial da nave
     call DESENHA_NAVE            ; Desenha a nave nessa posi??o
     
+    mov di, 115*320 + 310
+    call DESENHA_NAVE_INIMIGA
+    
 MENU_INICIAL_CONTROLE:
     call PRINT_OPTION_SELECTED
     mov ah, 00h   ; Chama a fun??o de input do teclado (INT 16h)
@@ -455,6 +459,13 @@ endp
 DESENHA_NAVE proc
     ; DI j? deve conter a posi??o ao chamar esta fun??o
     mov si, offset desenho_nave   ; Carrega o offset da nave
+    call DESENHA_ELEMENTO         ; Chama a fun??o que desenha na posi??o definida
+    ret
+endp
+
+DESENHA_NAVE_INIMIGA proc
+    ; DI j? deve conter a posi??o ao chamar esta fun??o
+    mov si, offset spaceshipSprite   ; Carrega o offset da nave
     call DESENHA_ELEMENTO         ; Chama a fun??o que desenha na posi??o definida
     ret
 endp
