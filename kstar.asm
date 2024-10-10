@@ -30,18 +30,35 @@ model small
     memoria_video equ 0A000h
     
     ; Defini??o do desenho da nave
-    desenho_nave db 0,0,0Fh,0Fh,0Fh,0Fh,0Fh,0,0,0,0,0Fh,3,3,3,0,0,0,0,0,0Fh,3,3,0Fh,0,0,0,0,0,0,3,3,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0,0,3,0Fh,0Fh,0Fh,0Fh,1,1,0Fh,0Fh,0Fh,3,0Fh,0Fh,0Fh,0Fh,1,1,0Fh,0Fh,0Fh,3,3,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0,0,0Fh,3,3,0Fh,0,0,0,0,0,0,0,0Fh,3,3,3,0,0,0,0,0,0,0,0Fh,0Fh,0Fh,0Fh,0Fh,0,0,0    
-                     
-    spaceshipSprite db 0 , 0 , 4 , 4 , 4 ,0Fh,0Fh,0Fh,0Fh,0Fh
-                    db 0 , 0 , 0 , 0 , 0 ,0Fh,0Fh,0Fh,0Fh,0Fh
-                    db 0 , 0 , 0 , 0 , 0 , 0 ,0Fh,0Fh,0Fh, 0
-                    db 0 , 0 ,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh, 4 , 0
-                    db 4 ,0Fh,0Fh,0Fh, 1 , 1 ,0Fh, 4 , 0 , 0
-                    db 4 ,0Fh,0Fh,0Fh, 1 , 1 ,0Fh, 4 , 0 , 0
-                    db 0 , 0 ,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh, 4 , 0 
-                    db 0 , 0 , 0 , 0 , 0 , 0 ,0Fh,0Fh,0Fh, 0 
-                    db 0 , 0 , 0 , 0 , 0 , 0Fh,0Fh,0Fh,0Fh,0Fh
-                    db 0 , 0 , 4 , 4 , 4 , 0Fh,0Fh,0Fh,0Fh,0Fh
+    nave_principal      db 0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0 , 0 , 0 , 0 , 0 , 0  
+                        db 0 , 0 ,0Fh,0Fh, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                        db 0 , 0 ,0Fh,0Fh, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                        db 0 , 0 ,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh, 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                        db 0 , 0 ,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh
+                        db 0 , 0 ,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh, 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                        db 0 , 0 ,0Fh,0Fh, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                        db 0 , 0 ,0Fh,0Fh, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                        db 0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh, 0 , 0 , 0 , 0 , 0 , 0
+
+    nave_inimiga        db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 9 , 9 , 9 , 9 , 9
+                        db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 9 , 9 , 0 , 0 , 0
+                        db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0
+                        db 0 , 0 , 0 , 0 , 9 , 9 , 9 , 9 , 9 , 9 , 0 , 0 , 0 , 0 , 0
+                        db 9 , 9 , 9 , 9 , 9 , 9 , 9 , 9 , 9 , 9 , 9 , 9 , 9 , 0 , 0
+                        db 0 , 0 , 0 , 0 , 9 , 9 , 9 , 9 , 9 , 9 , 0 , 0 , 0 , 0 , 0
+                        db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0
+                        db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 9 , 9 , 0 , 0 , 0
+                        db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 9 , 9 , 9 , 9 , 9
+
+    tiro                db 0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh, 0 , 0 , 0 , 0 , 0 , 0 ,0
+                        db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0
+                        db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0
+                        db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0
+                        db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh
+                        db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0
+                        db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0
+                        db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0
+                        db 0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh, 0 , 0 , 0 , 0 , 0 , 0 ,0 
 
     gameName db "         _  __   ___ _            ", CR, LF
              db "        | |/ /__/ __| |_ __ _ _ _ ", CR, LF
@@ -420,11 +437,11 @@ MENU_INICIAL proc
     
     xor bh, bh ; Seta opcao para Jogar inicialmente (0 = JOGAR, 1 = SAIR)
     
-    ; Configurar a posi??o da nave (por exemplo, centro da tela)
+    ; Configurar a posi??o da nave
     mov di, 95*320 + 0       ; Posi??o inicial da nave
     call DESENHA_NAVE            ; Desenha a nave nessa posi??o
     
-    mov di, 115*320 + 310
+    mov di, 115*320 + 305
     call DESENHA_NAVE_INIMIGA
     
 MENU_INICIAL_CONTROLE:
@@ -458,14 +475,14 @@ endp
 ; Procedimento para desenhar a nave em uma posi??o passada em DI (di = Y * 320 + X) onde Y: A linha desejada e X: A coluna desejada.
 DESENHA_NAVE proc
     ; DI j? deve conter a posi??o ao chamar esta fun??o
-    mov si, offset desenho_nave   ; Carrega o offset da nave
+    mov si, offset nave_principal   ; Carrega o offset da nave
     call DESENHA_ELEMENTO         ; Chama a fun??o que desenha na posi??o definida
     ret
 endp
 
 DESENHA_NAVE_INIMIGA proc
     ; DI j? deve conter a posi??o ao chamar esta fun??o
-    mov si, offset spaceshipSprite   ; Carrega o offset da nave
+    mov si, offset nave_inimiga   ; Carrega o offset da nave
     call DESENHA_ELEMENTO         ; Chama a fun??o que desenha na posi??o definida
     ret
 endp
@@ -479,12 +496,12 @@ DESENHA_ELEMENTO proc
     push di
     push si
     
-    mov dx, 10                  ; Altura do desenho (10 linhas)
+    mov dx, 9                  ; Altura do desenho (9 linhas)
 DESENHA_ELEMENTO_LOOP:
-    mov cx, 10                  ; Largura do desenho (10 colunas)
-    rep movsb                   ; Move 10 bytes de SI para DI (desenha uma linha)
+    mov cx, 15                  ; Largura do desenho (15 colunas)
+    rep movsb                   ; Move 15 bytes de SI para DI (desenha uma linha)
     dec dx                      ; Decrementa o contador de linhas
-    add di, 310                 ; Pula para a pr?xima linha (320 - 10 = 310)
+    add di, 305                 ; Pula para a pr?xima coluna (320 - 15 = 305)
     cmp dx, 0                   ; Verifica se j? desenhou todas as linhas
     jnz DESENHA_ELEMENTO_LOOP   ; Continua at? desenhar todas as linhas
     
@@ -493,6 +510,51 @@ DESENHA_ELEMENTO_LOOP:
     pop cx
     pop dx
     ret
+endp
+
+; Funcao para remover um desenho da tela
+    ;DI recebe a posicao do primeiro pixel do desenho
+REMOVE_DESENHO proc
+    push ax
+    push dx
+    push cx
+    push di
+    push si
+    
+    mov dx, 9
+    mov al, 0
+REMOVE_DESENHO_LOOP:
+    mov cx, 15
+    rep stosb
+    dec dx
+    add di, 305
+    cmp dx, 0
+    jnz REMOVE_DESENHO_LOOP
+    
+    pop si
+    pop di
+    pop cx
+    pop dx
+    pop ax
+    ret
+endp
+
+; Funcao para pintar toda a tela de preto (limpar)
+LIMPAR_TELA proc
+    push ax
+    push cx
+    push dx
+    
+    mov di, 0
+    mov al, 0
+    mov cx, 64000
+    rep stosb
+    
+    pop dx  
+    pop cx
+    pop ax
+    ret
+    
 endp
     
 INICIO:
