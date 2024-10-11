@@ -424,6 +424,8 @@ DESENHAR_CAIXA proc
     ret
 endp
 
+
+
 ; Sem parametros
 ; Retorno
 ; bh 
@@ -432,15 +434,7 @@ endp
 ; Destroi BX
 MENU_INICIAL proc
 
-    call PRINT_GAME_NAME  
-    call PRINT_OPTIONS
     
-    ; Configurar a posi??o da nave
-    mov di, 95*320 + 0       ; Posi??o inicial da nave
-    call DESENHA_NAVE            ; Desenha a nave nessa posi??o
-    
-    mov di, 115*320 + 305
-    call DESENHA_NAVE_INIMIGA
     
     xor bh, bh ; Seta opcao para Jogar inicialmente (0 = JOGAR, 1 = SAIR)
     
@@ -448,7 +442,7 @@ MENU_INICIAL_CONTROLE:
     call PRINT_OPTION_SELECTED
     
     mov ah, 0   ; Chama a fun??o de input do teclado (INT 16h)
-    int 16h       ; -----> Captura a tecla pressionada (isso aqui t? dando problema, algumas fun??es ex: REMOVE_DESENHO n?o funcionam ap?s isso)
+    int 16h     ; -----> Captura a tecla pressionada (isso aqui t? dando problema, algumas fun??es ex: REMOVE_DESENHO n?o funcionam ap?s isso)
 
     ; Verifica se a tecla pressionada foi Enter (ASCII)
     cmp ah, accept 
@@ -514,6 +508,21 @@ DESENHA_ELEMENTO_LOOP:
     ret
 endp
 
+DESENHA_ELEMENTOS_MENU proc
+
+    call PRINT_GAME_NAME  
+    call PRINT_OPTIONS
+    
+    ; Configurar a posi??o da nave
+    mov di, 95*320 + 0       ; Posi??o inicial da nave
+    call DESENHA_NAVE            ; Desenha a nave nessa posi??o
+    
+    mov di, 115*320 + 305
+    call DESENHA_NAVE_INIMIGA
+
+    ret
+endp
+
 ; Funcao para remover um desenho da tela
 ;DI recebe a posicao do primeiro pixel do desenho
 REMOVE_DESENHO proc
@@ -567,8 +576,10 @@ INICIO:
     mov es, ax
     
     call SET_VIDEO_MODE
+    
+    call DESENHA_ELEMENTOS_MENU
     call MENU_INICIAL
-
+    
     or bh, bh ; Verifica opcao selecionada (se deve sair do jogo)
     jnz SAIR_JOGO
     
