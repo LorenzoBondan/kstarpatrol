@@ -590,7 +590,7 @@ MOVIMENTO_GERAL proc
     cmp nave_atual, 0
     je MOVIMENTO_NAVE_ALIADA ; Se for a nave aliada, chama seu movimento
 
-    mov di, 96*320 + 1
+    mov di, 96*320 + 0
     call REMOVE_DESENHO
     call MOVIMENTO_NAVE_INIMIGA ; Caso contr?rio, chama o movimento da nave inimiga
 
@@ -628,7 +628,7 @@ MOVIMENTO_NAVE_ALIADA proc
 
 MOVIMENTO_LOOP_ALIADA:
     ; Verifica se a posi??o da nave est? dentro dos limites
-    cmp ax, 320 ; Verifica o limite direito (320)
+    cmp ax, 319 ; Verifica o limite direito (319)
     
     jle MOVE_RIGHT
 
