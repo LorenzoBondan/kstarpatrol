@@ -28,6 +28,10 @@ model small
     
     ; Constantes de Posicoes de memoria 
     memoria_video equ 0A000h
+    posicao_atual_nave dw 0
+
+    navePosX dw 0 ; Posi??o X inicial da nave
+    navePosY dw 95 ; Posi??o Y inicial da nave
     
     ; Defini??o do desenho da nave
     nave_principal      db 0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0 , 0 , 0 , 0 , 0 , 0  
@@ -424,8 +428,6 @@ DESENHAR_CAIXA proc
     ret
 endp
 
-
-
 ; Sem parametros
 ; Retorno
 ; bh 
@@ -434,13 +436,12 @@ endp
 ; Destroi BX
 MENU_INICIAL proc
 
-    
-    
     xor bh, bh ; Seta opcao para Jogar inicialmente (0 = JOGAR, 1 = SAIR)
     
 MENU_INICIAL_CONTROLE:
     call PRINT_OPTION_SELECTED
     
+    ; Captura a tecla pressionada
     mov ah, 0   ; Chama a fun??o de input do teclado (INT 16h)
     int 16h     ; -----> Captura a tecla pressionada (isso aqui t? dando problema, algumas fun??es ex: REMOVE_DESENHO n?o funcionam ap?s isso)
 
@@ -567,6 +568,150 @@ LIMPAR_TELA proc
     ret
     
 endp
+
+; Ler os direcionais do teclado
+    ; retorna o caractere em AL
+    LER_KEY proc
+    mov AH, 0
+    int 16h
+    ret
+    endp
+    
+        ; Funcao destinada a mover a nave para cima
+    MOVE_NAVE_CIMA proc
+    push ax
+    push bx
+    push cx
+    push si
+    push di
+    mov bx, posicao_atual_nave
+    
+    mov ax, memoria_video
+    mov ds, ax
+    
+    mov dx, 11
+    mov si, bx
+    mov di, bx
+    sub di, 320
+    push di
+MOVE_NAVE_CIMA_LOOP:
+    mov cx, 10
+    rep movsb
+    dec dx
+    add di, 310
+    add si, 310
+    cmp dx, 0
+    jnz MOVE_NAVE_CIMA_LOOP
+    pop di
+    mov bx, di
+    
+    mov ax, @data
+    mov ds, ax
+    
+    mov posicao_atual_nave, bx
+    pop di
+    pop si
+    pop cx
+    pop bx
+    pop ax
+    ret
+    endp
+    
+    ;Funcao destinada a mover a nave para baixo
+    MOVE_NAVE_BAIXO proc
+    push ax
+    push bx
+    push cx
+    push si
+    push di
+    mov bx, posicao_atual_nave
+    mov ax, memoria_video
+    mov ds, ax
+    
+    mov dx, 11
+    mov si, bx
+    mov di, bx
+    add di, 320
+    push di
+    add di, 2880                 ; inicio da ultima linha da nave
+    add si, 2880                 ; inicio da linha de baixo da nave
+MOVE_NAVE_BAIXO_LOOP:
+    mov cx, 10
+    rep movsb
+    dec dx
+    sub di, 330
+    sub si, 330
+    cmp dx, 0
+    jnz MOVE_NAVE_BAIXO_LOOP
+    pop di
+    mov bx, di
+    mov ax, @data
+    mov ds, ax
+    mov posicao_atual_nave, bx
+    pop di
+    pop si
+    pop cx
+    pop bx
+    pop ax
+    ret
+    endp
+
+    ;Funcao destinada a checar a tecla digitada e direcionar a nave para as proc de mover
+    ; para cima, baixo e checa a barra de espaco para atirar
+    CHECA_MOVIMENTO_NAVE proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+    push di
+    mov ah, 01h
+    int 16h
+    jz FIM_MOVIMENTO_NAVE
+    call LER_KEY
+    
+    ; Compara se o usuario apertou a arrow down
+    cmp ah, 80
+    jz MOVER_PARA_BAIXO
+    ; Compara se o usuario apertou a arrow up
+    cmp ah, 72
+    jz MOVER_PARA_CIMA
+    ; Compara se o usuario apertou a barra de espaco
+    ;cmp al, 32
+    ;jz ATIRAR
+    jmp FIM_MOVIMENTO_NAVE
+    
+MOVER_PARA_CIMA:
+    cmp posicao_atual_nave, 474
+    jz FIM_MOVIMENTO_NAVE
+    call MOVE_NAVE_CIMA
+    jmp FIM_MOVIMENTO_NAVE
+    
+    
+MOVER_PARA_BAIXO:
+    cmp posicao_atual_nave, 54234
+    jz FIM_MOVIMENTO_NAVE
+    call MOVE_NAVE_BAIXO
+    jmp FIM_MOVIMENTO_NAVE
+    
+    ;ATIRAR:
+    ;cmp posicao_atual_tiro, 0
+    ;jnz FIM_MOVIMENTO_NAVE
+    
+    ;call CRIA_TIRO
+    
+    
+FIM_MOVIMENTO_NAVE:
+    pop di
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+    endp
+
+
     
 INICIO:
 
@@ -578,6 +723,7 @@ INICIO:
     call SET_VIDEO_MODE
     
     call DESENHA_ELEMENTOS_MENU
+    call CHECA_MOVIMENTO_NAVE
     call MENU_INICIAL
     
     or bh, bh ; Verifica opcao selecionada (se deve sair do jogo)
