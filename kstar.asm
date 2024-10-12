@@ -590,10 +590,12 @@ MOVIMENTO_GERAL proc
     cmp nave_atual, 0
     je MOVIMENTO_NAVE_ALIADA ; Se for a nave aliada, chama seu movimento
 
+    mov di, 96*320 + 1
+    call REMOVE_DESENHO
     call MOVIMENTO_NAVE_INIMIGA ; Caso contr?rio, chama o movimento da nave inimiga
 
     ; Verifica se a posi??o atual da nave inimiga ? 0
-    cmp naveInimigaPosX, -15
+    cmp naveInimigaPosX, 0
     je ZERAR_NAVES ; Se a nave inimiga chegar no 0, vai zerar as posi??es das naves
     
     jmp FIM ; Caso contr?rio, finaliza a execu??o da rotina
@@ -603,7 +605,10 @@ ZERAR_NAVES:
     mov navePosY, 95 ; Reseta a posi??o Y da nave aliada
     mov naveInimigaPosX, 305 ; Reseta a posi??o X da nave inimiga
     mov naveInimigaPosY, 115 ; Reseta a posi??o Y da nave inimiga
-
+    
+    mov di, 115*320 + 0
+    call REMOVE_DESENHO
+    
 FIM:
     ; Alterna entre as naves
     xor nave_atual, 1 ; Alterna a nave atual entre 0 e 1
@@ -627,9 +632,7 @@ MOVIMENTO_LOOP_ALIADA:
     
     jle MOVE_RIGHT
 
-    ; Se a nave aliada atingir o limite direito, reinicia sua posi??o
-    ;mov navePosX, 0
-    ;mov navePosY, 95
+    ; Se a nave aliada atingir o limite direito
     mov nave_atual, 1 ; Indica que a pr?xima nave a mover ? a inimiga
     jmp FIM_PROC_ALIADA ; Termina a rotina da nave aliada
 
@@ -683,13 +686,11 @@ MOVIMENTO_NAVE_INIMIGA proc
 
 MOVIMENTO_LOOP_INIMIGA:
     ; Verifica se a posi??o da nave est? dentro dos limites
-    cmp ax, -15     ; Verifica o limite esquerdo (0 - 15 largura da nave)
+    cmp ax, 0     ; Verifica o limite esquerdo (0 - 15 largura da nave)
     
     jge MOVE_LEFT
 
-    ; Se a nave inimiga atingir o limite esquerdo, reinicia sua posi??o
-    ;mov naveInimigaPosX, 305
-    ;mov naveInimigaPosY, 115
+    ; Se a nave inimiga atingir o limite esquerdo
     mov nave_atual, 0 ; Indica que a pr?xima nave a mover ? a aliada
     jmp FIM_PROC_INIMIGA ; Termina a rotina da nave inimiga
 
