@@ -38,6 +38,8 @@ model small
     
     nave_atual db 0 ; 0 para a nave aliada, 1 para a nave inimiga
     
+    tempo_delay_tela_setor dw 4 ; 4 segundos 
+    
     ; Defini??o do desenho da nave
     nave_principal      db 0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0 , 0 , 0 , 0 , 0 , 0  
                         db 0 , 0 ,0Fh,0Fh, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
@@ -68,7 +70,8 @@ model small
                         db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0
                         db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0
                         db 0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh, 0 , 0 , 0 , 0 , 0 , 0 ,0 
-
+    
+    ; 7 x 36 = 252                   
     gameName db "         _  __   ___ _            ", CR, LF
              db "        | |/ /__/ __| |_ __ _ _ _ ", CR, LF
              db "        | ' <___\__ \  _/ _` | '_|", CR, LF
@@ -76,6 +79,13 @@ model small
              db "        | _ \__ _| |_ _ _ ___| |  ", CR, LF
              db "        |  _/ _` |  _| '_/ _ \ |  ", CR, LF
              db "        |_| \__,_|\__|_| \___/_|  ", CR, LF
+    
+    ; 5 x 41 = 205         
+    setor_um db "   _____ ________________  ____     ___",CR,LF
+             db "  / ___// ____/_  __/ __ \/ __ \   <  /",CR,LF
+             db "  \__ \/ __/   / / / / / / /_/ /   / / ",CR,LF
+             db " ___/ / /___  / / / /_/ / _, _/   / /  ",CR,LF
+             db "/____/_____/ /_/  \____/_/ |_|   /_/   ",CR,LF  
              
           
 .code
@@ -109,16 +119,16 @@ PRINT_TEXT proc
     push bp
 
     mov di, sp
-      
+     
     mov ax, ds    
     mov es, ax
-    
+   
     mov bh, 0
-    
+
     mov ah, 13h
     mov al, 1
-    int 10h
-    
+    int 10h 
+   
     mov sp, di
     pop bp
     pop si
@@ -128,7 +138,6 @@ PRINT_TEXT proc
     pop es
     ret
 endp
-
 ;-----------------------------------------------------------------------------------------------;
 ;                                                                                               ;
 ;  FUNCOES DO MENU INICIAL                                                                      ;
@@ -146,7 +155,7 @@ PRINT_GAME_NAME proc
     mov bp, offset gameName ; Text to print
     mov dh, 0 ; Line to print
     mov dl, 0 ; Column to print
-    mov cx, 574 ; Size of string printed
+    mov cx, 252 ; Size of string printed
     mov bl, 50 ; Color
     
     call PRINT_TEXT
@@ -740,6 +749,62 @@ DELAY_LOOP:
     ret
 endp
 
+
+DELAY_TELA_SETOR proc
+    push cx
+    push dx
+
+    mov cx, 003Dh  ; Parte alta de 4.000.000 microssegundos (4 segundos)
+    mov dx, 0900h  ; Parte baixa de 4.000.000 microssegundos (4 segundos)
+    
+    mov ah, 86h    ; Fun??o de delay do BIOS
+    int 15h        ; Chama interrup??o para aguardar o tempo especificado
+    
+    pop dx
+    pop cx
+    ret
+endp
+
+;-----------------------------------------------------------------------------------------------;
+;                                                                                               ;
+;  FUNCOES DO JOGO                                                                              ;
+;                                                                                               ;
+;-----------------------------------------------------------------------------------------------;
+
+PRINT_SETOR_UM proc
+    
+    push bp
+    push dx
+    push cx
+    push bx
+
+    mov bp, offset setor_um ; Text to print
+    mov dh, 9 ; Line to print
+    mov dl, 0 ; Column to print
+    mov cx, 205 ; Size of string printed
+    mov bl, 5 ; Color
+    
+    call PRINT_TEXT
+    
+    CALL DELAY_TELA_SETOR
+    
+    pop bx
+    pop cx
+    pop dx
+    pop bp
+    ret
+    ret
+endp
+
+CHAMAR_SETOR_UM proc
+
+    call LIMPAR_TELA
+    call PRINT_SETOR_UM
+    CALL LIMPAR_TELA
+    
+    ret
+endp
+
 INICIO:
 
     mov ax, @data
@@ -756,7 +821,7 @@ INICIO:
     or bh, bh ; Verifica opcao selecionada (se deve sair do jogo)
     jnz SAIR_JOGO
     
-    call LIMPAR_TELA
+    call CHAMAR_SETOR_UM
 
     SAIR_JOGO:
     mov ah, 4Ch     ; Function to terminate the program
