@@ -14,6 +14,8 @@ model small
     
     jogar db "JOGAR"
     sair db "SAIR"
+    tempo db "TEMPO: "
+    score db "SCORE: "
     
     screenWidth equ 320
     screenHeight equ 200
@@ -833,6 +835,42 @@ CHAMAR_SETOR_UM proc
     call LIMPAR_TELA
     call PRINT_SETOR_UM
     CALL LIMPAR_TELA
+    
+    CALL COMECAR_JOGO
+    ret
+endp
+
+PRINT_TEMPO_E_SCORE proc
+    push bp
+    push dx
+    push cx
+    push bx
+    
+    mov bp, offset score ; Text to print
+    mov dh, 0 ; Line to print
+    mov dl, 0 ; Column to print
+    mov cx, 7 ; Size of string printed
+    mov bl, 15 ; Color
+    call PRINT_TEXT
+
+    mov bp, offset tempo ; Text to print
+    mov dh, 0 ; Line to print
+    mov dl, 70 ; Column to print
+    mov cx, 7 ; Size of string printed
+    mov bl, 15 ; Color
+    call PRINT_TEXT
+    
+    pop bx
+    pop cx
+    pop dx
+    pop bp
+    
+    ret
+endp
+
+COMECAR_JOGO proc
+    
+    CALL PRINT_TEMPO_E_SCORE
     
     ret
 endp
