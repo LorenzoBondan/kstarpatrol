@@ -41,6 +41,10 @@ model small
     nave_atual db 0 ; 0 para a nave aliada, 1 para a nave inimiga
     
     tempo_delay_tela_setor dw 4 ; 4 segundos 
+    tempo_restante dw 60        ; Come?amos com 60 segundos
+    
+    ; Buffer para exibir o tempo
+    tempo_str db "00", 0
     
     ; Defini??o do desenho da nave
     nave_principal      db 0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0 , 0 , 0 , 0 , 0 , 0  
@@ -102,7 +106,8 @@ model small
                db "  \__ \/ __/   / / / / / / /_/ /    /_ < ",CR,LF
                db " ___/ / /___  / / / /_/ / _, _/   ___/ / ",CR,LF
                db "/____/_____/ /_/  \____/_/ |_|   /____/  ",CR,LF
-                                                             
+    
+    ; 8 x 38 = 304
     logo_perdeu db "        __   _____   ___ ___ ",CR,LF
                 db "        \ \ / / _ \ / __| __|",CR,LF
                 db "         \ V / (_) | (__| _| ",CR,LF
@@ -112,6 +117,7 @@ model small
                 db "     |  _/ _||   / |) | _|| |_| ||_|",CR,LF
                 db "     |_| |___|_|_\___/|___|\___/ (_)",CR,LF
 
+    ; 8 x 38 = 304
     logo_venceu db "        __   _____   ___ ___ ",CR,LF
                 db "        \ \ / / _ \ / __| __|",CR,LF
                 db "         \ V / (_) | (__| _| ",CR,LF
@@ -784,7 +790,7 @@ DELAY_LOOP:
 endp
 
 
-DELAY_TELA_SETOR proc
+DELAY_TELA_SETOR proc ; 4 SEGUNDOS
     push cx
     push dx
 
@@ -840,6 +846,38 @@ CHAMAR_SETOR_UM proc
     ret
 endp
 
+PRINT_VOCE_PERDEU proc
+    
+    push bp
+    push dx
+    push cx
+    push bx
+
+    mov bp, offset logo_perdeu ; Text to print
+    mov dh, 9 ; Line to print
+    mov dl, 0 ; Column to print
+    mov cx, 304 ; Size of string printed
+    mov bl, 5 ; Color
+    
+    call PRINT_TEXT
+    
+    CALL DELAY_TELA_SETOR
+    
+    pop bx
+    pop cx
+    pop dx
+    pop bp
+    ret
+    ret
+endp
+
+CHAMAR_VOCE_PERDEU proc
+
+    call LIMPAR_TELA
+    call PRINT_VOCE_PERDEU
+    ret
+endp
+
 PRINT_TEMPO_E_SCORE proc
     push bp
     push dx
@@ -849,15 +887,25 @@ PRINT_TEMPO_E_SCORE proc
     mov bp, offset score ; Text to print
     mov dh, 0 ; Line to print
     mov dl, 0 ; Column to print
-    mov cx, 7 ; Size of string printed
+    mov cx, 6 ; Size of string printed
     mov bl, 15 ; Color
     call PRINT_TEXT
 
     mov bp, offset tempo ; Text to print
     mov dh, 0 ; Line to print
     mov dl, 70 ; Column to print
-    mov cx, 7 ; Size of string printed
+    mov cx, 6 ; Size of string printed
     mov bl, 15 ; Color
+    call PRINT_TEXT
+    
+    ; Atualiza e imprime o valor do tempo restante
+    call CONVERTER_TEMPO_PARA_STR ; Converte o valor de 'tempo_restante' em uma string
+
+    mov bp, offset tempo_str ; Text to print
+    mov dh, 0               ; Line to print
+    mov dl, 78              ; Column to print (ao lado de "TEMPO: ")
+    mov cx, 2               ; Size of string (2 caracteres para o tempo)
+    mov bl, 2              ; Color
     call PRINT_TEXT
     
     pop bx
@@ -868,10 +916,85 @@ PRINT_TEMPO_E_SCORE proc
     ret
 endp
 
+CONVERTER_TEMPO_PARA_STR proc
+    ; Converte o valor de 'tempo_restante' para string e armazena em 'tempo_str'
+    push ax
+    push bx
+    push cx
+    push dx
+
+    mov ax, [tempo_restante]  ; Pega o valor do tempo restante
+    mov bx, 10                ; Divisor para converter o n?mero para decimal
+
+    ; Primeiro d?gito
+    xor dx, dx                ; Limpa DX
+    div bx                    ; AX / 10, resto em DX
+    add dl, '0'               ; Converte para caractere ASCII
+    mov [tempo_str+1], dl     ; Armazena o segundo d?gito
+
+    ; Segundo d?gito
+    mov ax, [tempo_restante]  ; Pega o valor do tempo restante
+    xor dx, dx                ; Limpa DX
+    div bx                    ; AX / 10, resto em DX
+    add al, '0'               ; Converte para caractere ASCII
+    mov [tempo_str], al       ; Armazena o primeiro d?gito
+
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+endp
+
+DECREMENTAR_TEMPO proc
+    ; Decrementa o tempo restante
+    push ax
+    push bx
+    push cx
+    push dx
+
+    mov ax, [tempo_restante]
+    cmp ax, 0                 ; Verifica se j? chegou a zero
+    je FIM_DO_TEMPO           ; Se sim, pula para o fim
+    dec ax                    ; Caso contr?rio, decrementa o tempo
+    mov [tempo_restante], ax   ; Atualiza a vari?vel
+
+FIM_DO_TEMPO:
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+endp
+
+DELAY_1_SEGUNDO proc
+    push cx
+    push dx
+
+    mov cx, 000Fh  ; Parte alta de 1.000.000 microssegundos (1 segundo)
+    mov dx, 4240h  ; Parte baixa de 1.000.000 microssegundos (1 segundo)
+    
+    mov ah, 86h    ; Fun??o de delay do BIOS
+    int 15h        ; Chama interrup??o para aguardar o tempo especificado
+    
+    pop dx
+    pop cx
+    ret
+endp
+
 COMECAR_JOGO proc
-    
-    CALL PRINT_TEMPO_E_SCORE
-    
+    ; Loop principal do jogo com cron?metro de 60 segundos
+    mov [tempo_restante], 60   ; Reinicia o tempo a 60 segundos
+COMECAR_JOGO_LOOP:
+    call PRINT_TEMPO_E_SCORE   ; Atualiza a tela com o tempo e score
+    call DELAY_1_SEGUNDO       ; Aguarda 1 segundo
+    call DECREMENTAR_TEMPO     ; Decrementa o tempo
+    mov ax, [tempo_restante]
+    cmp ax, 0                  ; Verifica se o tempo acabou
+    jne COMECAR_JOGO_LOOP      ; Continua se o tempo n?o chegou a zero
+
+    call CHAMAR_VOCE_PERDEU
+
     ret
 endp
 
