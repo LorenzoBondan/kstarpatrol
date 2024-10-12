@@ -36,6 +36,8 @@ model small
     naveInimigaPosX dw 305
     naveInimigaPosY dw 115
     
+    nave_atual db 0 ; 0 para a nave aliada, 1 para a nave inimiga
+    
     ; Defini??o do desenho da nave
     nave_principal      db 0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0 , 0 , 0 , 0 , 0 , 0  
                         db 0 , 0 ,0Fh,0Fh, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
@@ -467,7 +469,7 @@ MENU_INICIAL_CONTROLE:
 
 CONTINUE_MOVING:
     
-    call MOVIMENTO_NAVE_ALIADA
+    call MOVIMENTO_GERAL
     
     ; Continua o loop do menu
     jmp MENU_INICIAL_CONTROLE
@@ -583,12 +585,38 @@ LIMPAR_TELA proc
     
 endp
 
+MOVIMENTO_GERAL proc
+    ; Chama a movimenta??o de acordo com a nave atual
+    cmp nave_atual, 0
+    je MOVIMENTO_NAVE_ALIADA ; Se for a nave aliada, chama seu movimento
+
+    call MOVIMENTO_NAVE_INIMIGA ; Caso contr?rio, chama o movimento da nave inimiga
+
+    ; Verifica se a posi??o atual da nave inimiga ? 0
+    cmp naveInimigaPosX, -15
+    je ZERAR_NAVES ; Se a nave inimiga chegar no 0, vai zerar as posi??es das naves
+    
+    jmp FIM ; Caso contr?rio, finaliza a execu??o da rotina
+
+ZERAR_NAVES:
+    mov navePosX, 0 ; Reseta a posi??o X da nave aliada
+    mov navePosY, 95 ; Reseta a posi??o Y da nave aliada
+    mov naveInimigaPosX, 305 ; Reseta a posi??o X da nave inimiga
+    mov naveInimigaPosY, 115 ; Reseta a posi??o Y da nave inimiga
+
+FIM:
+    ; Alterna entre as naves
+    xor nave_atual, 1 ; Alterna a nave atual entre 0 e 1
+    ret
+endp
+
+
 MOVIMENTO_NAVE_ALIADA proc
     push ax
     push bx
     push cx
     push dx
-    
+
     ; Inicializa as posi??es da nave
     mov ax, navePosX
     mov bx, navePosY
@@ -598,11 +626,12 @@ MOVIMENTO_LOOP_ALIADA:
     cmp ax, 320 ; Verifica o limite direito (320)
     
     jle MOVE_RIGHT
-    
-    ; Se a nave aliada atingir o limite direito, chama a proc da outra nave
-    call MOVIMENTO_NAVE_INIMIGA
-    
-    jmp FIM_PROC_ALIADA
+
+    ; Se a nave aliada atingir o limite direito, reinicia sua posi??o
+    ;mov navePosX, 0
+    ;mov navePosY, 95
+    mov nave_atual, 1 ; Indica que a pr?xima nave a mover ? a inimiga
+    jmp FIM_PROC_ALIADA ; Termina a rotina da nave aliada
 
 MOVE_RIGHT:
     ; Remover a nave da posi??o atual antes de incrementar ax
@@ -633,16 +662,14 @@ MOVE_RIGHT:
     ; Chamar a rotina de delay
     call DELAY 
 
-    ;jmp MOVIMENTO_LOOP_ALIADA  ; Voltar para o in?cio do loop !!! isso aqui faz a leitura de setas travar
-     
 FIM_PROC_ALIADA:
-
     pop dx
     pop cx
     pop bx
     pop ax
     ret
 endp
+
 
 MOVIMENTO_NAVE_INIMIGA proc
     push ax
@@ -660,23 +687,24 @@ MOVIMENTO_LOOP_INIMIGA:
     
     jge MOVE_LEFT
 
-    call MOVIMENTO_NAVE_ALIADA
+    ; Se a nave inimiga atingir o limite esquerdo, reinicia sua posi??o
+    ;mov naveInimigaPosX, 305
+    ;mov naveInimigaPosY, 115
+    mov nave_atual, 0 ; Indica que a pr?xima nave a mover ? a aliada
     jmp FIM_PROC_INIMIGA ; Termina a rotina da nave inimiga
-    
+
 MOVE_LEFT:
-    
     ; Remove a nave da posi??o anterior
-    ; C?lculo da posi??o anterior
     mov di, bx      ; Posi??o Y
     shl di, 8      ; Desloca para a posi??o de 16 bits
     mov dx, bx      ; Posi??o Y
-    shl dx, 6      ; Desloca para a posi??o de 64 bits (cada linha tem 320 pixels)
+    shl dx, 6      ; Desloca para 64 bits (cada linha tem 320 pixels)
     add di, dx      ; Adiciona o deslocamento da posi??o Y
     add di, ax      ; Adiciona a posi??o X
     call REMOVE_DESENHO ; Remove a nave da posi??o anterior
     
     ; Mover a nave para a esquerda
-    dec ax          ; decrementa a posi??o X da nave
+    dec ax          ; Decrementa a posi??o X da nave
 
     ; Atualiza as vari?veis de posi??o
     mov naveInimigaPosX, ax
@@ -686,7 +714,7 @@ MOVE_LEFT:
     mov di, bx      ; Posi??o Y
     shl di, 8      ; Desloca para a posi??o de 16 bits
     mov dx, bx      ; Posi??o Y
-    shl dx, 6      ; Desloca para a posi??o de 64 bits (cada linha tem 320 pixels)
+    shl dx, 6      ; Desloca para 64 bits (cada linha tem 320 pixels)
     add di, dx      ; Adiciona o deslocamento da posi??o Y
     add di, ax      ; Adiciona a posi??o X
     call DESENHA_NAVE_INIMIGA ; Desenha a nave na nova posi??o
@@ -694,15 +722,14 @@ MOVE_LEFT:
     ; Chama a rotina de delay
     call DELAY
 
-    ;jmp MOVIMENTO_LOOP_INIMIGA  ; Retorna ao in?cio do loop !!! isso aqui faz a leitura de setas travar
-    
-FIM_PROC_INIMIGA:  
+FIM_PROC_INIMIGA: 
     pop dx
     pop cx
     pop bx
     pop ax
     ret
 endp
+
 
 ; Rotina de delay
 DELAY proc
