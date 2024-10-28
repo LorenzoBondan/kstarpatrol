@@ -43,8 +43,11 @@ model small
     tempo_delay_tela_setor dw 4 ; 4 segundos 
     tempo_restante dw 60        ; Come?amos com 60 segundos
     
+    score_jogador dw 0
+    
     ; Buffer para exibir o tempo
     tempo_str db "00", 0
+    score_jogador_str db "", 0
     
     ; Defini??o do desenho da nave
     nave_principal      db 0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0 , 0 , 0 , 0 , 0 , 0  
@@ -884,13 +887,26 @@ PRINT_TEMPO_E_SCORE proc
     push cx
     push bx
     
+    ; Imprime o t?tulo "SCORE"
     mov bp, offset score ; Text to print
     mov dh, 0 ; Line to print
     mov dl, 0 ; Column to print
     mov cx, 6 ; Size of string printed
     mov bl, 15 ; Color
     call PRINT_TEXT
+    
+    ; Converte o valor do score em string antes de imprimir
+    call CONVERTER_SCORE_PARA_STR
+    
+    ; Imprime o valor do score
+    mov bp, offset score_jogador_str ; String do score a ser impressa
+    mov dh, 0        ; Linha 0
+    mov dl, 7        ; Coluna 7
+    mov cx, 5        ; Tamanho da string "00000"
+    mov bl, 2       ; Cor do texto
+    call PRINT_TEXT
 
+    ; Imprime o t?tulo "TEMPO"
     mov bp, offset tempo ; Text to print
     mov dh, 0 ; Line to print
     mov dl, 70 ; Column to print
@@ -981,6 +997,56 @@ DELAY_1_SEGUNDO proc
     pop cx
     ret
 endp
+
+CONVERTER_SCORE_PARA_STR proc
+    ; Converte o valor de 'score_jogador' para string e armazena em 'score_jogador_str'
+    push ax
+    push bx
+    push cx
+    push dx
+
+    mov ax, [score_jogador]   ; Pega o valor do score do jogador
+    mov bx, 10                ; Divisor para converter o n?mero para decimal
+
+    ; Converte o score para 5 d?gitos
+
+    ; Primeiro d?gito (mais ? direita)
+    xor dx, dx                ; Limpa DX
+    div bx                    ; AX / 10, resto em DX
+    add dl, '0'               ; Converte o resto (d?gito) para ASCII
+    mov [score_jogador_str+4], dl ; Armazena o ?ltimo d?gito (posi??o 5 da string)
+
+    ; Segundo d?gito
+    xor dx, dx
+    div bx                    ; AX / 10 novamente
+    add dl, '0'
+    mov [score_jogador_str+3], dl ; Armazena o quarto d?gito (posi??o 4)
+
+    ; Terceiro d?gito
+    xor dx, dx
+    div bx
+    add dl, '0'
+    mov [score_jogador_str+2], dl ; Armazena o terceiro d?gito (posi??o 3)
+
+    ; Quarto d?gito
+    xor dx, dx
+    div bx
+    add dl, '0'
+    mov [score_jogador_str+1], dl ; Armazena o segundo d?gito (posi??o 2)
+
+    ; Quinto d?gito (mais ? esquerda)
+    xor dx, dx
+    div bx
+    add dl, '0'
+    mov [score_jogador_str], dl   ; Armazena o primeiro d?gito (posi??o 1)
+
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+endp
+
 
 COMECAR_JOGO proc
     ; Loop principal do jogo com cron?metro de 60 segundos
