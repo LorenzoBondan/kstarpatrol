@@ -1128,12 +1128,46 @@ CONVERTER_SCORE_PARA_STR proc
     ret
 endp
 
+
 POSICIONA_NAVES_INICIO_DO_JOGO proc
 
-        ; Configurar a posi??o da nave
-    mov di, 95*320 + 0       ; Posi??o inicial da nave
-    call DESENHA_NAVE            ; Desenha a nave nessa posi??o
+    ; Configurar a posi??o da nave
+    mov si, offset nave_principal
+    mov di, 95*320 + 32       ; Posi??o inicial da nave
+    call DESENHA_ELEMENTO            ; Desenha a nave nessa posi??o
 
+    mov si, offset nave_principal_2
+    mov di, 20*320 + 0       ; Posi??o inicial da nave
+    call DESENHA_ELEMENTO            ; Desenha a nave nessa posi??o
+    
+    mov si, offset nave_principal_3
+    mov di, 40*320 + 0       ; Posi??o inicial da nave
+    call DESENHA_ELEMENTO            ; Desenha a nave nessa posi??o
+    
+    mov si, offset nave_principal_4
+    mov di, 60*320 + 0       ; Posi??o inicial da nave
+    call DESENHA_ELEMENTO            ; Desenha a nave nessa posi??o
+    
+    mov si, offset nave_principal_5
+    mov di, 80*320 + 0       ; Posi??o inicial da nave
+    call DESENHA_ELEMENTO            ; Desenha a nave nessa posi??o
+    
+    mov si, offset nave_principal_6
+    mov di, 100*320 + 0       ; Posi??o inicial da nave
+    call DESENHA_ELEMENTO            ; Desenha a nave nessa posi??o
+    
+    mov si, offset nave_principal_7
+    mov di, 120*320 + 0       ; Posi??o inicial da nave
+    call DESENHA_ELEMENTO            ; Desenha a nave nessa posi??o
+    
+    mov si, offset nave_principal_8
+    mov di, 140*320 + 0       ; Posi??o inicial da nave
+    call DESENHA_ELEMENTO            ; Desenha a nave nessa posi??o
+    
+    mov si, offset nave_principal_9
+    mov di, 160*320 + 0       ; Posi??o inicial da nave
+    call DESENHA_ELEMENTO            ; Desenha a nave nessa posi??o
+    
     ret
 endp
 
