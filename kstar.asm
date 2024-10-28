@@ -80,6 +80,87 @@ model small
                         db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0
                         db 0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh, 0 , 0 , 0 , 0 , 0 , 0 ,0 
     
+   ;vidas
+   nave_principal_2      db 9,9,9,9,9,9,9,9,9,0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,9,9, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,9,9, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,9,9,9,9,9,9, 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,9,9,9,9,9,9,9,9,9,9,9,9,9
+                         db 0 , 0 ,9,9,9,9,9,9, 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,9,9, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,9,9, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 9,9,9,9,9,9,9,9,9, 0 , 0 , 0 , 0 , 0 , 0
+                         
+   nave_principal_3      db 0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,0Ah,0Ah, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,0Ah,0Ah, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah, 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah
+                         db 0 , 0 ,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah, 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,0Ah,0Ah, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,0Ah,0Ah, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah, 0 , 0 , 0 , 0 , 0 , 0
+                         
+   nave_principal_4      db 0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,0Ch,0Ch, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,0Ch,0Ch, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch, 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch
+                         db 0 , 0 ,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch, 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,0Ch,0Ch, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,0Ch,0Ch, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch, 0 , 0 , 0 , 0 , 0 , 0
+    
+   nave_principal_5      db 0Dh,0Dh,0Dh,0Dh,0Dh,0Dh,0Dh,0Dh,0Dh,0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,0Dh,0Dh, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,0Dh,0Dh, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,0Dh,0Dh,0Dh,0Dh,0Dh,0Dh, 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,0Dh,0Dh,0Dh,0Dh,0Dh,0Dh,0Dh,0Dh,0Dh,0Dh,0Dh,0Dh,0Dh
+                         db 0 , 0 ,0Dh,0Dh,0Dh,0Dh,0Dh,0Dh, 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,0Dh,0Dh, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,0Dh,0Dh, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0Dh,0Dh,0Dh,0Dh,0Dh,0Dh,0Dh,0Dh,0Dh, 0 , 0 , 0 , 0 , 0 , 0                    
+    
+    nave_principal_6     db 0Eh,0Eh,0Eh,0Eh,0Eh,0Eh,0Eh,0Eh,0Eh,0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,0Eh,0Eh, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,0Eh,0Eh, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,0Eh,0Eh,0Eh,0Eh,0Eh,0Eh, 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,0Eh,0Eh,0Eh,0Eh,0Eh,0Eh,0Eh,0Eh,0Eh,0Eh,0Eh,0Eh,0Eh
+                         db 0 , 0 ,0Eh,0Eh,0Eh,0Eh,0Eh,0Eh, 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,0Eh,0Eh, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,0Eh,0Eh, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0Eh,0Eh,0Eh,0Eh,0Eh,0Eh,0Eh,0Eh,0Eh, 0 , 0 , 0 , 0 , 0 , 0
+     
+    nave_principal_7     db 7,7,7,7,7,7,7,7,7,0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,7,7, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,7,7, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,7,7,7,7,7,7, 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,7,7,7,7,7,7,7,7,7,7,7,7,7
+                         db 0 , 0 ,7,7,7,7,7,7, 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,7,7, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,7,7, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 7,7,7,7,7,7,7,7,7, 0 , 0 , 0 , 0 , 0 , 0           
+    
+    nave_principal_8     db 5,5,5,5,5,5,5,5,5,0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,5,5, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,5,5, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,5,5,5,5,5,5, 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,5,5,5,5,5,5,5,5,5,5,5,5,5
+                         db 0 , 0 ,5,5,5,5,5,5, 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,5,5, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,5,5, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 5,5,5,5,5,5,5,5,5, 0 , 0 , 0 , 0 , 0 , 0     
+                    
+    nave_principal_9     db 4,4,4,4,4,4,4,4,4,0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,4,4, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,4,4, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,4,4,4,4,4,4, 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,4,4,4,4,4,4,4,4,4,4,4,4,4
+                         db 0 , 0 ,4,4,4,4,4,4, 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,4,4, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 0 , 0 ,4,4, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
+                         db 4,4,4,4,4,4,4,4,4, 0 , 0 , 0 , 0 , 0 , 0      
+                         
     ; 7 x 36 = 252                   
     gameName db "         _  __   ___ _            ", CR, LF
              db "        | |/ /__/ __| |_ __ _ _ _ ", CR, LF
@@ -1047,10 +1128,21 @@ CONVERTER_SCORE_PARA_STR proc
     ret
 endp
 
+POSICIONA_NAVES_INICIO_DO_JOGO proc
+
+        ; Configurar a posi??o da nave
+    mov di, 95*320 + 0       ; Posi??o inicial da nave
+    call DESENHA_NAVE            ; Desenha a nave nessa posi??o
+
+    ret
+endp
+
 
 COMECAR_JOGO proc
     ; Loop principal do jogo com cron?metro de 60 segundos
     mov [tempo_restante], 60   ; Reinicia o tempo a 60 segundos
+    
+    call POSICIONA_NAVES_INICIO_DO_JOGO
 COMECAR_JOGO_LOOP:
     call PRINT_TEMPO_E_SCORE   ; Atualiza a tela com o tempo e score
     call DELAY_1_SEGUNDO       ; Aguarda 1 segundo
