@@ -41,6 +41,8 @@ model small
     nave_atual db 0 ; 0 para a nave aliada, 1 para a nave inimiga
     
     tempo_delay_tela_setor dw 4 ; 4 segundos 
+    tempo_delay_tela_setor_parte_alta dw 003Dh  ; Parte alta de 4.000.000 microssegundos (4 segundos)
+    tempo_delay_tela_setor_parte_baixa dw 0900h  ; Parte baixa de 4.000.000 microssegundos (4 segundos)
     tempo_restante dw 60        ; Come?amos com 60 segundos
     
     score_jogador dw 0
@@ -908,8 +910,8 @@ DELAY_TELA_SETOR proc ; 4 SEGUNDOS
     push cx
     push dx
 
-    mov cx, 003Dh  ; Parte alta de 4.000.000 microssegundos (4 segundos)
-    mov dx, 0900h  ; Parte baixa de 4.000.000 microssegundos (4 segundos)
+    mov cx, [tempo_delay_tela_setor_parte_alta]  ; Parte alta de 4.000.000 microssegundos (4 segundos)
+    mov dx, [tempo_delay_tela_setor_parte_baixa]  ; Parte baixa de 4.000.000 microssegundos (4 segundos)
     
     mov ah, 86h    ; Fun??o de delay do BIOS
     int 15h        ; Chama interrup??o para aguardar o tempo especificado
