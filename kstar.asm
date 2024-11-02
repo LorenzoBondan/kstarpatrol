@@ -1382,32 +1382,44 @@ endp
 ;;;;;;;;;;;;;;;;;;;;;;
 
 COMECAR_JOGO proc
-    
-    ; Loop principal do jogo com cron?metro de 60 segundos
-    mov [tempo_restante], 60   ; Reinicia o tempo a 60 segundos
-    
+    mov [tempo_restante], 60         ; Reinicia o tempo a 60 segundos
+    mov cx, 7000                     ; Configura um contador para um valor maior (~1 segundo)
+
     call POSICIONA_NAVES_INICIO_DO_JOGO
-    
     mov bx, posicao_central_nave
     mov posicao_atual_nave, bx
-    
+
 COMECAR_JOGO_LOOP:
-    
-    call PRINT_TEMPO_E_SCORE   ; Atualiza a tela com o tempo e score
-    
-    ; Verifica e executa o movimento da nave
+    call PRINT_TEMPO_E_SCORE         ; Atualiza a tela com o tempo e score
+
+    ; Verifica e executa o movimento da nave (input do teclado)
     call CHECA_MOVIMENTO_NAVE
-    
-    call DELAY_1_SEGUNDO       ; Aguarda 1 segundo
-    call DECREMENTAR_TEMPO     ; Decrementa o tempo
+
+    ; Reduz o contador de ciclos para o tempo
+    dec cx
+    jnz CONTINUA_JOGO                ; Se CX n?o chegou a zero, continua o jogo sem atualizar o tempo
+
+    ; Reseta o contador de ciclos e decrementa o tempo do jogo
+    mov cx, 7000                     ; Reinicia o contador (~1 segundo)
+    call DECREMENTAR_TEMPO           ; Decrementa o tempo do jogo
+
+    ; Verifica se o tempo acabou
     mov ax, [tempo_restante]
-    cmp ax, 0                  ; Verifica se o tempo acabou
-    jne COMECAR_JOGO_LOOP      ; Continua se o tempo n?o chegou a zero
+    cmp ax, 0
+    jne CONTINUA_JOGO
 
+    ; Caso o tempo tenha acabado, chama a tela de "Voc? Perdeu"
     call CHAMAR_VOCE_PERDEU
+    jmp FIM_DO_JOGO
 
+CONTINUA_JOGO:
+    jmp COMECAR_JOGO_LOOP            ; Volta para o in?cio do loop principal
+
+FIM_DO_JOGO:
     ret
 endp
+
+
 
 ;Limpa o buffer do teclado
 CLEAR_KEYBOARD_BUFFER proc
