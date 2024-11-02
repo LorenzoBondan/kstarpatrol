@@ -33,6 +33,9 @@ model small
     posicao_atual_nave dw 0
     posicao_central_nave equ 30432 ; nave centralizada (coluna 32 linha 95) 95*320 + 32 = 30432
     
+    posicao_atual_tiro dw 0,0
+    contador_tiro dw 200   ; Valor inicial do contador do tiro para controlar a velocidade do tiro
+    
     navePosX dw 0 ; Posi??o X inicial da nave
     navePosY dw 95 ; Posi??o Y inicial da nave
     
@@ -1341,8 +1344,8 @@ CHECA_MOVIMENTO_NAVE proc
     cmp ah, upArrow
     jz MOVER_PARA_CIMA
     ; Compara se o usuario apertou a barra de espaco
-    ;cmp al, 32
-    ;jz ATIRAR
+    cmp al, 32
+    jz ATIRAR
     jmp FIM_MOVIMENTO_NAVE
    
 MOVER_PARA_CIMA:
@@ -1359,11 +1362,11 @@ MOVER_PARA_BAIXO:
     call MOVE_NAVE_BAIXO
     jmp FIM_MOVIMENTO_NAVE
    
-;ATIRAR:
-    ;cmp posicao_atual_tiro, 0
-    ;jnz FIM_MOVIMENTO_NAVE
+ATIRAR:
+    cmp posicao_atual_tiro, 0
+    jnz FIM_MOVIMENTO_NAVE
    
-    ;call CRIA_TIRO
+    call CRIA_TIRO
    
    
 FIM_MOVIMENTO_NAVE:
@@ -1384,6 +1387,8 @@ endp
 COMECAR_JOGO proc
     mov [tempo_restante], 60         ; Reinicia o tempo a 60 segundos
     mov cx, 7000                     ; Configura um contador para um valor maior (~1 segundo)
+    
+    mov [contador_tiro], 200   ; Inicializa o contador do tiro
 
     call POSICIONA_NAVES_INICIO_DO_JOGO
     mov bx, posicao_central_nave
@@ -1394,6 +1399,8 @@ COMECAR_JOGO_LOOP:
 
     ; Verifica e executa o movimento da nave (input do teclado)
     call CHECA_MOVIMENTO_NAVE
+    
+    call MOVER_TIRO
 
     ; Reduz o contador de ciclos para o tempo
     dec cx
@@ -1420,7 +1427,6 @@ FIM_DO_JOGO:
 endp
 
 
-
 ;Limpa o buffer do teclado
 CLEAR_KEYBOARD_BUFFER proc
     mov ah, 01h 
@@ -1435,6 +1441,203 @@ CLEAR_KEYBOARD_BUFFER proc
 BufferCleared:
     ret
 CLEAR_KEYBOARD_BUFFER endp
+
+
+
+;;;;;;;;;;;;;;;;;
+
+; Funcao que cria o tiro na tela de jogo
+CRIA_TIRO proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+    push di
+    
+    mov si, offset posicao_atual_tiro
+    mov ax, posicao_atual_nave
+    
+    mov bx, 52                  ; 32 (coluna nave) + 15 (largura nave) = 47 + 5 = espa?amento = 52
+    mov [si], bx                 ; armazena coluna do tiro
+    
+    sub ax, 47
+    mov cx, 320
+    xor dx, dx
+    div cx
+    add ax, 5                    ; deslocamento para centralizar o tiro
+    add si, 2
+    mov [si], ax                 ; armazena linha do tiro
+    
+    xor dx, dx
+    
+    mov bx, 320
+    mul bx
+    mov bx, ax
+    sub si, 2
+    mov ax, [si]
+    add ax, bx
+    
+    mov di, ax
+    mov dx, 0fh
+    
+    mov ax, memoria_video
+    mov ds, ax
+    mov cx, 10
+    
+    mov [di], dx
+    
+    mov ax, @data
+    mov ds, ax
+    
+    pop di
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+endp
+    
+; Funcao que remove o tiro da tela de jogo
+REMOVER_TIRO proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+    push di
+    
+    mov si, offset posicao_atual_tiro
+    add si, 2
+    mov ax, [si]
+    mov bx, 320
+    xor dx, dx
+    mul bx
+    mov bx, ax
+    sub si, 2
+    mov ax, [si]
+    add ax, bx
+    mov di, ax
+    mov ax, memoria_video
+    mov ds, ax
+    xor dx, dx
+    mov [di], dx
+    
+    mov ax, @data
+    mov ds, ax
+    
+    mov ax, [si]
+    
+    mov [si], dx
+    add si, 2
+    mov [si], dx
+    
+    pop di
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+endp
+    
+    ; Funcao que move o tiro para a direita
+MOVER_TIRO proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+    push di
+
+    ; Verifica o contador de movimento do tiro
+    mov ax, [contador_tiro]
+    dec ax
+    mov [contador_tiro], ax
+    cmp ax, 0
+    jnz FIM_MOVER_TIRO    ; Se o contador n?o chegou a zero, n?o move o tiro neste ciclo
+
+    ; Reseta o contador de tiro para o valor inicial
+    mov [contador_tiro], 200   ; Ajuste o valor para controlar a velocidade do tiro
+
+    mov si, offset posicao_atual_tiro
+    mov ax, [si]
+    cmp ax, 319
+    jz APAGAR_TIRO
+    add si, 2
+    mov ax, [si]
+    cmp ax, 0
+    jz FIM_MOVER_TIRO
+
+    sub si, 2
+
+    mov cx, 2
+    call CALCULA_POSICAO_DE_VIDEO
+
+    xor dx, dx
+    mov bx, 0fh
+    mov ax, memoria_video
+    mov ds, ax
+    mov cx, 10
+
+    mov [di], dx
+    inc di
+    mov [di], bx
+
+    mov ax, @data
+    mov ds, ax
+
+    mov ax, [si]
+    inc ax
+    mov [si], ax
+
+    jmp FIM_MOVER_TIRO
+
+APAGAR_TIRO:
+    call REMOVER_TIRO
+
+FIM_MOVER_TIRO:
+    pop di
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+endp
+
+    
+    ; Realiza o calculo para transformar os valores de linha em coluna na posicao correta na memoria de video
+    ;si posicao da memoria (coluna)
+    ;cx deslocamento, vetor de asteroides ou ajuda
+    ;retorna em di
+CALCULA_POSICAO_DE_VIDEO:
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+    
+    add si, cx
+    mov ax, [si]
+    mov bx, 320
+    xor dx, dx
+    mul bx
+    sub si, cx
+    mov bx, [si]
+    add ax, bx
+    mov di, ax
+    
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    
+    ret
+    endp    
+    
 
 INICIO:
 
