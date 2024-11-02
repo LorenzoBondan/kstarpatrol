@@ -31,6 +31,7 @@ model small
     ; Constantes de Posicoes de memoria 
     memoria_video equ 0A000h
     posicao_atual_nave dw 0
+    posicao_central_nave equ 30432 ; nave centralizada (coluna 32 linha 95)
     
     navePosX dw 0 ; Posi??o X inicial da nave
     navePosY dw 95 ; Posi??o Y inicial da nave
@@ -50,14 +51,6 @@ model small
     ; Buffer para exibir o tempo
     tempo_str db "00", 0
     score_jogador_str db "", 0
-    
-    HEIGHT_SURFACE   equ 20
-    SURFACE_WIDTH    equ 480        ; Largura do buffer de superf?cie
-
-    ; Cores
-    COR_MONTANHA     equ 06h        ; Marrom
-    COR_LAGO         equ 0Bh        ; Ciano claro
-    surface_buffer db SURFACE_WIDTH dup(COR_MONTANHA)
     
     ; Defini??o do desenho da nave
     nave_principal      db 0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0 , 0 , 0 , 0 , 0 , 0  
@@ -1232,13 +1225,179 @@ DESENHA_MONTANHAS_LOOP:
     ret
 endp
 
+;;;;;;;;;;; movimento
+
+
+; Ler os direcionais do teclado
+; retorna o caractere em AL
+LER_KEY proc
+    ;mov AH, 0
+    mov ah, 01h
+    int 16h
+    ret
+endp
+
+; Funcao destinada a mover a nave para cima --------> talvez tenha que mexer nos valores, pois o tamanho da nossa nave eh diferente
+MOVE_NAVE_CIMA proc
+    push ax
+    push bx
+    push cx
+    push si
+    push di
+    mov bx, posicao_atual_nave
+   
+    mov ax, memoria_video
+    mov ds, ax
+   
+    mov dx, 11
+    mov si, bx
+    mov di, bx
+    sub di, 320
+    push di
+MOVE_NAVE_CIMA_LOOP:
+    mov cx, 15
+    rep movsb
+    dec dx
+    add di, 305
+    add si, 305
+    cmp dx, 0
+    jnz MOVE_NAVE_CIMA_LOOP
+    pop di
+    mov bx, di
+   
+    mov ax, @data
+    mov ds, ax
+   
+    mov posicao_atual_nave, bx
+    pop di
+    pop si
+    pop cx
+    pop bx
+    pop ax
+
+    ret
+endp
+   
+;Funcao destinada a mover a nave para baixo --------> talvez tenha que mexer nos valores, pois o tamanho da nossa nave eh diferente
+MOVE_NAVE_BAIXO proc
+    push ax
+    push bx
+    push cx
+    push si
+    push di
+    mov bx, posicao_atual_nave
+    mov ax, memoria_video
+    mov ds, ax
+   
+    mov dx, 11
+    mov si, bx
+    mov di, bx
+    add di, 320
+    push di
+    add di, 2560                 ; inicio da ultima linha da nave
+    add si, 2560                 ; inicio da linha de baixo da nave
+MOVE_NAVE_BAIXO_LOOP:
+    mov cx, 15
+    rep movsb
+    dec dx
+    sub di, 335
+    sub si, 335
+    cmp dx, 0
+    jnz MOVE_NAVE_BAIXO_LOOP
+    pop di
+    mov bx, di
+    mov ax, @data
+    mov ds, ax
+    mov posicao_atual_nave, bx
+    pop di
+    pop si
+    pop cx
+    pop bx
+    pop ax
+
+    ret
+endp
+   
+   
+;Funcao destinada a checar a tecla digitada e direcionar a nave para as proc de mover
+; para cima, baixo e checa a barra de espaco para atirar
+CHECA_MOVIMENTO_NAVE proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+    push di
+    
+    mov ah, 01h
+    int 16h
+    jz FIM_MOVIMENTO_NAVE
+    call LER_KEY
+   
+    ; Compara se o usuario apertou a arrow down
+    cmp ah, downArrow
+    jz MOVER_PARA_BAIXO
+    ; Compara se o usuario apertou a arrow up
+    cmp ah, upArrow
+    jz MOVER_PARA_CIMA
+    ; Compara se o usuario apertou a barra de espaco
+    ;cmp al, 32
+    ;jz ATIRAR
+    jmp FIM_MOVIMENTO_NAVE
+   
+MOVER_PARA_CIMA:
+    
+    cmp posicao_atual_nave, 474 ; linha 1
+    jz FIM_MOVIMENTO_NAVE
+    call MOVE_NAVE_CIMA
+    jmp FIM_MOVIMENTO_NAVE
+   
+   
+MOVER_PARA_BAIXO:
+    cmp posicao_atual_nave, 54234 ; linha 169
+    jz FIM_MOVIMENTO_NAVE
+    call MOVE_NAVE_BAIXO
+    jmp FIM_MOVIMENTO_NAVE
+   
+;ATIRAR:
+    ;cmp posicao_atual_tiro, 0
+    ;jnz FIM_MOVIMENTO_NAVE
+   
+    ;call CRIA_TIRO
+   
+   
+FIM_MOVIMENTO_NAVE:
+    call CLEAR_KEYBOARD_BUFFER
+    
+    pop di
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+endp
+
+
+;;;;;;;;;;;;;;;;;;;;;;
+
 COMECAR_JOGO proc
+    
     ; Loop principal do jogo com cron?metro de 60 segundos
     mov [tempo_restante], 60   ; Reinicia o tempo a 60 segundos
     
     call POSICIONA_NAVES_INICIO_DO_JOGO
+    
+    mov bx, posicao_central_nave
+    mov posicao_atual_nave, bx
+    
 COMECAR_JOGO_LOOP:
+    
     call PRINT_TEMPO_E_SCORE   ; Atualiza a tela com o tempo e score
+    
+    ; Verifica e executa o movimento da nave
+    call CHECA_MOVIMENTO_NAVE
+    
     call DELAY_1_SEGUNDO       ; Aguarda 1 segundo
     call DECREMENTAR_TEMPO     ; Decrementa o tempo
     mov ax, [tempo_restante]
@@ -1249,6 +1408,21 @@ COMECAR_JOGO_LOOP:
 
     ret
 endp
+
+;Limpa o buffer do teclado
+CLEAR_KEYBOARD_BUFFER proc
+    mov ah, 01h 
+    int 16h       
+
+    jz BufferCleared  
+    mov ah, 00h   
+    int 16h       
+
+    jmp CLEAR_KEYBOARD_BUFFER
+
+BufferCleared:
+    ret
+CLEAR_KEYBOARD_BUFFER endp
 
 INICIO:
 
