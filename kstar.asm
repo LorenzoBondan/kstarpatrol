@@ -31,7 +31,7 @@ model small
     ; Constantes de Posicoes de memoria 
     memoria_video equ 0A000h
     posicao_atual_nave dw 0
-    posicao_central_nave equ 30432 ; nave centralizada (coluna 32 linha 95)
+    posicao_central_nave equ 30432 ; nave centralizada (coluna 32 linha 95) 95*320 + 32 = 30432
     
     navePosX dw 0 ; Posi??o X inicial da nave
     navePosY dw 95 ; Posi??o Y inicial da nave
@@ -1347,14 +1347,14 @@ CHECA_MOVIMENTO_NAVE proc
    
 MOVER_PARA_CIMA:
     
-    cmp posicao_atual_nave, 474 ; linha 1
+    cmp posicao_atual_nave, 6432 ; linha 20 da coluna 32
     jz FIM_MOVIMENTO_NAVE
     call MOVE_NAVE_CIMA
     jmp FIM_MOVIMENTO_NAVE
    
    
 MOVER_PARA_BAIXO:
-    cmp posicao_atual_nave, 54234 ; linha 169
+    cmp posicao_atual_nave, 51232 ; linha 160 da coluna 32
     jz FIM_MOVIMENTO_NAVE
     call MOVE_NAVE_BAIXO
     jmp FIM_MOVIMENTO_NAVE
