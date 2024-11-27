@@ -56,6 +56,19 @@ model small
     tempo_str db "00", 0
     score_jogador_str db "", 0
     
+    ; armazena posicao naves inimigas
+    ; armazena posi??o das naves inimigas                       
+    naves_inimigas dw 32 dup (0) ; salva a posicao de todas as naves inimigas
+    num_naves_ativas dw 0 ;
+    desl_vet_naves_inimigas dw 32 ;
+    quantidade_naves_inimigas dw 2;
+    movimento_nav_cont dw 0
+                       
+    sessao_corrente db 0
+    
+    ;numero contador de naves inimigas
+    naves_inimigasco db 0
+    
     ; Defini??o do desenho da nave
     nave_principal      db 0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0 , 0 , 0 , 0 , 0 , 0  
                         db 0 , 0 ,0Fh,0Fh, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
@@ -948,11 +961,13 @@ PRINT_SETOR_UM proc
     ret
 endp
 
-CHAMAR_SETOR_UM proc
+CHAMAR_SETOR_UM proc    
 
     call LIMPAR_TELA
     call PRINT_SETOR_UM
     CALL LIMPAR_TELA
+    
+    mov [sessao_corrente], 1
     
     CALL COMECAR_JOGO
     ret
@@ -1377,6 +1392,521 @@ FIM_MOVIMENTO_NAVE:
     ret
 endp
 
+GERA_NUMERO_ALEATORIO PROC
+    mov dx, 40h            ; Porta de timer
+    in al, dx              ; L? o valor do timer
+    xor ah, ah             ; Limpa AH para ter o valor completo em AX
+    xor ax, bx             ; Mistura com BX para aumentar a aleatoriedade
+    xor ax, cx             ; Mistura com CX para aumentar a aleatoriedade
+    ; J? assumindo que o valor m?ximo est? em AX:
+    mov bx, ax             ; Salva o valor de maxValor em BX para a divis?o
+    mov ax, dx             ; Move o valor aleat?rio para AX
+    div bx                 ; Divide para obter valor entre 0 e maxValor-1
+    ; Resultado da divis?o est? agora em AX
+    ret
+ENDP
+
+;;teste
+ZERAR_NAVES_INIMIGAS_ATIVAS proc 
+    push ax
+    push bx
+    push cx
+    push dx
+    xor ax, ax
+    mov cx, desl_vet_naves_inimigas 
+    mov bx, offset naves_inimigas 
+ZERA_VETOR_NAVES_INIMIGAS: 
+    mov [bx], ax
+    add bx, 2
+    loop ZERA_VETOR_NAVES_INIMIGAS
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+    endp
+
+  ;;teste  
+PLOTAR_NAVE_INIMIGA_NOVA proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+    push di
+    
+    mov cx, num_naves_ativas 
+    mov ax, quantidade_naves_inimigas
+    cmp cx, ax
+    je FINAL_NOVA_NAVE_INIMIGA
+    
+    mov cx, quantidade_naves_inimigas
+    xor ax, ax
+    mov si, offset naves_inimigas
+    
+LOOP_NOVA_NAVE:
+    add si, desl_vet_naves_inimigas
+    mov ax, [si]
+    cmp ax, 0
+    jne FINAL_LOOP_NOVA_NAVE
+    push si
+    mov si, offset nave_inimiga
+    call PRINTA_OBJETO_DIREITA
+    pop si
+    cmp dx, 0
+    je FINAL_NOVA_NAVE_INIMIGA
+    mov ax, dx
+    mov [si], ax
+    sub si, desl_vet_naves_inimigas
+    mov ax, 308
+    mov [si], ax
+    mov ax, num_naves_ativas
+    inc ax
+    mov num_naves_ativas, ax
+    jmp FINAL_NOVA_NAVE_INIMIGA
+    
+FINAL_LOOP_NOVA_NAVE:
+    sub si, desl_vet_naves_inimigas
+    add si, 2
+    loop FINAL_LOOP_NOVA_NAVE
+    
+    
+FINAL_NOVA_NAVE_INIMIGA:
+    pop di
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+endp
+
+;; teste
+MOVE_OBJETO proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push di
+    push si
+    mov ax, memoria_video
+    mov ds, ax
+    
+    mov dx, 9
+    
+LOOP_MOVE_OBJETO:
+    mov cx, 15
+    mov di, si
+    dec di
+    rep movsb
+    add di, 304
+    add si, 304
+    dec dx
+    cmp dx, 0
+    jnz LOOP_MOVE_OBJETO
+    
+    mov ax, @data
+    mov ds, ax
+    
+    pop si
+    pop di
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+    endp
+
+
+;;teste 
+CHECA_NAVE_INIMIGA proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push di
+    push si
+    
+    mov si, offset naves_inimigas         ; Aponta para o array de naves inimigas
+    mov cx, num_naves_ativas              ; Define o n?mero de naves inimigas ativas
+    
+LOOP_CHECAGEM_NAVES_INIMIGAS:
+    xor ax, ax
+    xor dx, dx
+    add si, desl_vet_naves_inimigas       ; Move para a pr?xima nave na lista
+    mov ax, [si]                          ; Carrega a posi??o X da nave
+    sub si, desl_vet_naves_inimigas       ; Retorna ao in?cio do vetor da nave atual
+    cmp ax, 0
+    jz FIM_LOOP_CHECAGEM_NAVES_INIMIGAS   ; Se a posi??o X for 0, pula para o pr?ximo loop
+    
+    mov ax, [si]
+    cmp ax, 0
+    jz REMOVER_NAVE                       ; Se a posi??o X for 0, remove a nave
+    push cx
+    mov cx, desl_vet_naves_inimigas
+    call CHECA_COLISAO                    ; Verifica colis?o com outro objeto (exemplo: nave aliada)
+    pop cx
+    cmp bx, 1
+    jz REMOVER_NAVE                       ; Se houver colis?o, remove a nave
+    
+    push cx
+    mov cx, desl_vet_naves_inimigas
+    call CALCULA_POSICAO_DE_VIDEO         ; Calcula nova posi??o da nave para atualizar na tela
+    pop cx
+    
+    push si
+    mov si, di
+    call MOVE_OBJETO                      ; Move a nave inimiga para a nova posi??o
+    pop si
+    
+    mov ax, [si]
+    dec ax                                ; Decrementa a posi??o X para mover a nave para a esquerda
+    mov [si], ax                          ; Armazena a nova posi??o de X
+    
+    jmp TESTE_COLISAO_COM_TIRO            ; Testa colis?o com tiro do jogador
+    
+REMOVER_NAVE:
+    push cx
+    mov cx, desl_vet_naves_inimigas
+    call APAGA_OBJETO                     ; Remove o objeto da tela
+    pop cx
+    
+    mov ax, num_naves_ativas
+    dec ax
+    mov num_naves_ativas, ax              ; Decrementa o contador de naves ativas
+    jmp FIM_LOOP_CHECAGEM_NAVES_INIMIGAS  ; Vai para o fim do loop para processar a pr?xima nave
+    
+    
+TESTE_COLISAO_COM_TIRO:
+    mov dx, desl_vet_naves_inimigas
+    call COLISAO_TIRO                     ; Verifica se o tiro do jogador acertou a nave
+    cmp dx, 1
+    jne FIM_LOOP_CHECAGEM_NAVES_INIMIGAS  ; Se n?o houve colis?o com o tiro, continua
+    
+    push cx
+    mov cx, desl_vet_naves_inimigas
+    call APAGA_OBJETO                     ; Apaga a nave atingida pelo tiro
+    pop cx
+    
+    mov ax, num_naves_ativas
+    dec ax
+    mov num_naves_ativas, ax              ; Decrementa o contador de naves ativas
+    
+    
+FIM_LOOP_CHECAGEM_NAVES_INIMIGAS:
+    add si, 2                             ; Avan?a para o pr?ximo par (X,Y) no array
+    loop LOOP_CHECAGEM_NAVES_INIMIGAS     ; Continua o loop para a pr?xima nave
+    
+    pop si
+    pop di
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+    endp    
+
+;;teste
+CHECAGEM_NAVES_INIMIGAS:
+    cmp num_naves_ativas, 0
+    je FIM_CHECAGEM_NAVES           ; N?o h? naves para processar
+
+    call CHECA_NAVE_INIMIGA         ; Verifica e atualiza as naves inimigas
+
+FIM_CHECAGEM_NAVES:
+    ret
+endp
+
+
+;;teste
+PRINTA_OBJETO_DIREITA proc
+    push ax
+    push cx
+    push si
+    push di
+    push bx
+    xor bx, bx
+    xor dx, dx
+    call GERA_NUMERO_ALEATORIO
+    mov bx, 150
+    div bx
+    cmp dx, 11
+    ja PLOTAR_DESENHO
+    mov dx, 12
+    cmp dx, 145
+    jb PLOTAR_DESENHO
+    mov dx, 144
+
+;;teste
+
+PLOTAR_DESENHO:
+    xor bx, bx
+    cmp dx, 0
+    je FIM_PRINTA_OBJETO_DIREITA
+    mov ax, dx                   ; Retorno da linha em DX
+    push dx
+    mov bx, 320                  ; linha * 320
+    mul bx
+    mov bx, 308                  ; coluna 308
+    add ax, bx
+    xor di, di
+    mov di, ax
+    pop dx
+    call DESENHA_ELEMENTO
+FIM_PRINTA_OBJETO_DIREITA:
+    pop bx
+    pop di
+    pop si
+    pop cx
+    pop ax
+    ret
+    endp    
+    
+;;teste
+CHECA_COLISAO proc
+    push ax
+    push cx
+    push dx
+    push si
+    push di
+    
+    xor bx, bx
+    xor dx, dx
+    
+    cmp ax, 164                  ; coluna da nave (154) + 10 (pixel da direita)
+    ja FINAL_CHECA_COLISAO
+    cmp ax, 144                  ; coluna da nave (154) - 10 (pixel da esquerda)
+    jb FINAL_CHECA_COLISAO
+    
+    mov ax, posicao_atual_nave
+    
+    sub ax, 154
+    push cx
+    mov cx, 320
+    div cx
+    mov dx, ax
+    pop cx
+    add si, cx
+    mov ax, [si]
+    
+    add ax, 10
+    
+    cmp ax, dx
+    jb FINAL_CHECA_COLISAO
+    
+    sub ax, 20
+    cmp ax, dx
+    ja FINAL_CHECA_COLISAO
+    
+    mov bx, 1
+    
+FINAL_CHECA_COLISAO:
+    pop di
+    pop si
+    pop dx
+    pop cx
+    pop ax
+    ret
+    endp    
+    
+;; teste    
+APAGA_OBJETO proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+    push di
+    
+    push cx
+    call CALCULA_POSICAO_DE_VIDEO
+    
+    call REMOVE_DESENHO
+    pop cx
+    xor ax, ax
+    mov [si], ax
+    add si, cx
+    mov [si], ax
+    
+    pop di
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    
+    ret
+    endp
+    
+;;teste
+COLISAO_TIRO proc
+    push ax
+    push bx
+    push cx
+    push si
+    push di
+    mov cx, dx
+    mov bx, offset posicao_atual_tiro
+    mov ax, [si]
+    mov dx, [bx]
+    dec ax
+    cmp ax, dx
+    ja FIM_COLISAO_TIRO
+    add ax, 10
+    cmp ax, dx
+    jb FIM_COLISAO_TIRO
+    add si, cx
+    mov ax, [si]
+    add bx, 2
+    mov dx, [bx]
+    cmp dx, ax
+    jb FIM_COLISAO_TIRO
+    add ax, 10
+    cmp dx, ax
+    ja FIM_COLISAO_TIRO
+    sub si, cx
+    sub bx, 2
+    mov dx, 1
+    call REMOVER_TIRO
+FIM_COLISAO_TIRO:
+    pop di
+    pop si
+    pop cx
+    pop bx
+    pop ax
+    ret
+    endp    
+    
+;; teste
+CHECA_MOVIMENTO_OBJETO proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push di
+    push si
+    
+    mov si, offset naves_inimigas          ; Aponta para o array de naves inimigas
+    mov cx, num_naves_ativas               ; Define o n?mero de naves inimigas ativas
+    
+LOOP_CHECAGEM_MOV_NAVES_INIMIGAS:
+    xor ax, ax
+    xor dx, dx
+    add si, desl_vet_naves_inimigas        ; Move para a pr?xima nave na lista
+    mov ax, [si]                           ; Carrega a posi??o X da nave
+    sub si, desl_vet_naves_inimigas        ; Retorna ao in?cio do vetor da nave atual
+    cmp ax, 0
+    jz FIM_LOOP_CHECAGEM_NAVES             ; Se a posi??o X for 0, pula para o pr?ximo loop
+
+    ; Move o objeto na tela
+    push cx
+    mov cx, desl_vet_naves_inimigas
+    call CALCULA_POSICAO_DE_VIDEO          ; Calcula a posi??o de v?deo para atualiza??o
+    pop cx
+    
+    push si
+    mov si, di
+    call MOVE_OBJETO                       ; Move a nave inimiga
+    pop si
+    
+    mov ax, [si]
+    dec ax                                 ; Decrementa a posi??o X para mover a nave para a esquerda
+    mov [si], ax                           ; Atualiza a posi??o X no array
+
+    ;jmp CHECAGEM_COLISAO_COM_TIRO             ; Verifica a colis?o com o tiro
+
+CHECAGEM_COLISAO_COM_TIRO:
+    mov dx, desl_vet_naves_inimigas
+    call COLISAO_TIRO                      ; Verifica se o tiro do jogador acertou a nave
+    cmp dx, 1
+    jne FIM_LOOP_CHECAGEM_NAVES            ; Se n?o houve colis?o, continua
+
+    push cx
+    mov cx, desl_vet_naves_inimigas
+    call APAGA_OBJETO                      ; Apaga a nave atingida pelo tiro
+    pop cx
+
+    mov ax, num_naves_ativas
+    dec ax
+    mov num_naves_ativas, ax               ; Decrementa o contador de naves ativas
+    
+FIM_LOOP_CHECAGEM_NAVES:
+    add si, 2                              ; Avan?a para o pr?ximo par (X,Y) no array
+    loop LOOP_CHECAGEM_MOV_NAVES_INIMIGAS      ; Continua para a pr?xima nave
+    
+    pop si
+    pop di
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+endp
+
+;;teste
+MOVE_NAVES_INIMIGAS proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+    push di
+
+    mov si, offset naves_inimigas         ; Aponta para o array de naves
+    mov cx, num_naves_ativas              ; N?mero de naves ativas
+
+LOOP_MOV_NAVES:
+    ; Carrega a posi??o X da nave
+    mov ax, [si]
+    cmp ax, 0
+    je PROXIMA_NAVE                       ; Ignora naves "vazias"
+
+    ; Carrega a posi??o Y
+    mov bx, [si + 2]
+
+    ; Calcula a posi??o atual na tela e remove o sprite
+    push si
+    call CALCULA_POSICAO_DE_VIDEO         ; Calcula a posi??o de v?deo
+    call REMOVE_DESENHO                   ; Remove o sprite da posi??o antiga
+    pop si
+
+    ; Decrementa a posi??o X para mover ? esquerda
+    dec ax
+    cmp ax, 0
+    jmp REMOVER_NAVE_INIMIGA                       ; Se sair da tela, remove
+
+    ; Salva a nova posi??o X
+    mov [si], ax
+
+    ; Redesenha a nave na nova posi??o
+    push si
+    call CALCULA_POSICAO_DE_VIDEO         ; Calcula a nova posi??o de v?deo
+    call DESENHA_NAVE_INIMIGA             ; Desenha a nave
+    pop si
+
+    jmp PROXIMA_NAVE
+
+REMOVER_NAVE_INIMIGA:
+    ; Marca a nave como "vazia" (0,0)
+    mov word ptr [si], 0
+    mov word ptr [si + 2], 0
+    dec num_naves_ativas                  ; Atualiza o contador de naves
+    jmp PROXIMA_NAVE
+
+PROXIMA_NAVE:
+    add si, desl_vet_naves_inimigas       ; Avan?a para a pr?xima nave
+    loop LOOP_MOV_NAVES                   ; Continua o loop
+
+    pop di
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+endp
+
+        
 ;;;;;;;;;;;;;;;;;;;;;;
 
 COMECAR_JOGO proc
@@ -1396,7 +1926,11 @@ COMECAR_JOGO_LOOP:
     ; Verifica e executa o movimento da nave (input do teclado)
     call CHECA_MOVIMENTO_NAVE
     
-    call MOVER_TIRO
+    call PLOTAR_NAVE_INIMIGA_NOVA
+    
+    call CHECAGEM_NAVES_INIMIGAS
+    
+    call MOVER_TIRO   
 
     ; Reduz o contador de ciclos para o tempo
     dec cx
@@ -1404,7 +1938,7 @@ COMECAR_JOGO_LOOP:
 
     ; Reseta o contador de ciclos e decrementa o tempo do jogo
     mov cx, 7000                     ; Reinicia o contador (~1 segundo)
-    call DECREMENTAR_TEMPO           ; Decrementa o tempo do jogo
+    call DECREMENTAR_TEMPO           ; Decrementa o tempo do jogo?.
 
     ; Verifica se o tempo acabou
     mov ax, [tempo_restante]
@@ -1421,6 +1955,8 @@ CONTINUA_JOGO:
 FIM_DO_JOGO:
     ret
 endp
+
+
 
 ;Limpa o buffer do teclado
 CLEAR_KEYBOARD_BUFFER proc
@@ -1568,7 +2104,7 @@ FIM_MOVER_TIRO:
     pop ax
     ret
 endp
-    
+
 ; Realiza o calculo para transformar os valores de linha em coluna na posicao correta na memoria de video
 ;si posicao da memoria (coluna)
 ;cx deslocamento, vetor de asteroides ou ajuda
