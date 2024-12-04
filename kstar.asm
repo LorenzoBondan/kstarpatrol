@@ -63,6 +63,7 @@ model small
     contador_velocidade_nave_inimiga dw 120 ; Inicializa com um valor para ajustar a velocidade da nave
     quantidade_inimigos_setor_1 dw 10
     quantidade_inimigos_plotados dw 1
+    finalizou_naves dw 0
     ;;;;;;;;
     
     setor_atual dw 1
@@ -1686,7 +1687,7 @@ MOVIMENTO_GERAL_INIMIGO proc
     call MOVIMENTO_NAVE_INIMIGA_JOGO
 
     ; Verifica se a posi??o atual da nave inimiga ? 0
-    cmp [naveInimigaPosX], 17 ; coluna 17 ? o limite
+    cmp [naveInimigaPosX], 45 ; coluna 17 ? o limite
     je ZERAR_NAVES_INIMIGAS      ; Se a nave inimiga chegar no 0, zera as posi??es das naves
 
     jmp FIM_MOVIMENTO_GERAL_INIMIGO
@@ -1697,7 +1698,7 @@ ZERAR_NAVES_INIMIGAS:
     mov [naveInimigaPosY], 115
 
     ; Remove a nave da tela em sua ?ltima posi??o
-    mov di, 115*320 + 17
+    mov di, 115*320 + 45
     call REMOVE_DESENHO
     
     ; Decrementa o n?mero de naves plotadas
@@ -1884,7 +1885,7 @@ COMECAR_JOGO_LOOP:
     call MOVER_TIRO
 
     ; Verifica a posi??o da nave inimiga antes de desenhar ou mover
-    cmp [naveInimigaPosX], 18              ; Verifica se a nave est? na extremidade esquerda
+    cmp [naveInimigaPosX], 46              ; Verifica se a nave est? na extremidade esquerda
     je NOVA_NAVE                           ; Se chegou a 0, desenha uma nova nave
 
     ; Caso contr?rio, move a nave existente
