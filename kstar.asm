@@ -1919,8 +1919,26 @@ FIM_NOVA_NAVE:
     
 ADICIONA_SCORE:
     
+    mov ax, [quantidade_inimigos_plotados]  ; Carrega a quantidade de naves plotadas
+    cmp ax, [quantidade_inimigos_setor_1]    ; Compara com o limite de 10 naves
+    je FINALIZOU_TODAS_NAVES
+    
+    mov ax, finalizou_naves
+    cmp ax, 0
+    je ADICIONA_DE_FATO_SCORE
+    
+ADICIONA_DE_FATO_SCORE:
     add score_jogador, 100
     jmp CONTINUAR_LOOP                       ; Continua o loop principal
+    
+FINALIZOU_TODAS_NAVES:
+    mov ax, finalizou_naves
+    cmp ax, 1
+    jmp CONTINUAR_LOOP
+    
+    mov finalizou_naves, 1
+    add score_jogador, 100
+    jmp CONTINUAR_LOOP    
     
 CONTINUAR_LOOP:
     ; Reduz o contador de ciclos para o tempo
@@ -1955,6 +1973,7 @@ IR_PARA_SETOR_DOIS:
     inc setor_atual
     mov [quantidade_inimigos_setor_1], 15
     mov quantidade_inimigos_plotados, 1 
+    mov finalizou_naves, 0
     call CHAMAR_SETOR_DOIS
     
 IR_PARA_SETOR_TRES:
@@ -1963,6 +1982,7 @@ IR_PARA_SETOR_TRES:
     inc setor_atual
     mov [quantidade_inimigos_setor_1], 20
     mov quantidade_inimigos_plotados, 1
+    mov finalizou_naves, 0
     call CHAMAR_SETOR_TRES
     
 FIM_DO_JOGO:
