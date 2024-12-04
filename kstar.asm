@@ -56,6 +56,17 @@ model small
     tempo_str db "00", 0
     score_jogador_str db "", 0
     
+    ;;;;;;;;;;;
+    
+    delay_inimigos_setor_um dw 6000 ; 6 segundos -> 60s / 10 inimigos = 1 inimigo a cada 6 s
+    contador_movimento_nave_inimiga dw 500  ; Controla a frequ?ncia de movimento da nave inimiga
+    contador_velocidade_nave_inimiga dw 120 ; Inicializa com um valor para ajustar a velocidade da nave
+    quantidade_inimigos_setor_1 dw 10
+    quantidade_inimigos_plotados dw 1
+    ;;;;;;;;
+    
+    setor_atual dw 1
+  
     ; Defini??o do desenho da nave
     nave_principal      db 0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0 , 0 , 0 , 0 , 0 , 0  
                         db 0 , 0 ,0Fh,0Fh, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
@@ -198,25 +209,23 @@ model small
                db " ___/ / /___  / / / /_/ / _, _/   ___/ / ",CR,LF
                db "/____/_____/ /_/  \____/_/ |_|   /____/  ",CR,LF
     
-    ; 8 x 38 = 304
-    logo_perdeu db "        __   _____   ___ ___ ",CR,LF
-                db "        \ \ / / _ \ / __| __|",CR,LF
-                db "         \ V / (_) | (__| _| ",CR,LF
-                db "          \_/ \___/ \___|___|",CR,LF
-                db "      ___ ___ ___ ___  ___ _   _  _ ",CR,LF
-                db "     | _ \ __| _ \   \| __| | | || |",CR,LF
-                db "     |  _/ _||   / |) | _|| |_| ||_|",CR,LF
-                db "     |_| |___|_|_\___/|___|\___/ (_)",CR,LF
+    ; 8 X 30 = 240
+    logo_perdeu db "           __   _  _   _ ___  ",CR,LF  
+                db "          / _| / \| \_/ | __| ",CR,LF
+                db "         ( |_n| o | \_/ | _|  ",CR,LF 
+                db "          \__/|_n_|_| |_|___| ",CR,LF
+                db "           _  _ _ ___ ___     ",CR,LF
+                db "          / \| | | __| o \    ",CR,LF
+                db "         ( o ) V | _||   /    ",CR,LF
+                db "          \_/ \_/|___|_|\\    ",CR,LF
+                                      
 
-    ; 8 x 38 = 304
-    logo_venceu db "        __   _____   ___ ___ ",CR,LF
-                db "        \ \ / / _ \ / __| __|",CR,LF
-                db "         \ V / (_) | (__| _| ",CR,LF
-                db "          \_/ \___/ \___|___|",CR,LF
-                db "    __   _____ _  _  ___ ___ _   _ _",CR,LF
-                db "    \ \ / / __| \| |/ __| __| | | | |",CR,LF
-                db "     \ V /| _|| .` | (__| _|| |_| |_|",CR,LF
-                db "      \_/ |___|_|\_|\___|___|\___/(_)",CR,LF
+    ; 4 x 41 = 164
+    logo_venceu db "  ___  _   ___    _   ___ ___ _  _ ___  ",CR,LF
+                db " | _ \/_\ | _ \  /_\ | _ ) __| \| / __| ",CR,LF
+                db " |  _/ _ \|   / / _ \| _ \ _|| .` \__ \ ",CR,LF
+                db " |_|/_/ \_\_|_\/_/ \_\___/___|_|\_|___/ ",CR,LF                                 
+
         
                 ; 14 x 400
                 superficie_montanha db 0,0,0,0,0,0,0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,0,0,0,0,0,0,0,0,0,0,0,0
@@ -948,10 +957,80 @@ PRINT_SETOR_UM proc
     ret
 endp
 
+PRINT_SETOR_DOIS proc
+    
+    push bp
+    push dx
+    push cx
+    push bx
+
+    mov bp, offset setor_dois ; Text to print
+    mov dh, 9 ; Line to print
+    mov dl, 0 ; Column to print
+    mov cx, 205 ; Size of string printed
+    mov bl, 5 ; Color
+    
+    call PRINT_TEXT
+    
+    CALL DELAY_TELA_SETOR
+    
+    pop bx
+    pop cx
+    pop dx
+    pop bp
+    ret
+    ret
+endp
+
+PRINT_SETOR_TRES proc
+    
+    push bp
+    push dx
+    push cx
+    push bx
+
+    mov bp, offset setor_tres ; Text to print
+    mov dh, 9 ; Line to print
+    mov dl, 0 ; Column to print
+    mov cx, 205 ; Size of string printed
+    mov bl, 5 ; Color
+    
+    call PRINT_TEXT
+    
+    CALL DELAY_TELA_SETOR
+    
+    pop bx
+    pop cx
+    pop dx
+    pop bp
+    ret
+    ret
+endp
+
 CHAMAR_SETOR_UM proc
 
     call LIMPAR_TELA
     call PRINT_SETOR_UM
+    CALL LIMPAR_TELA
+    
+    CALL COMECAR_JOGO
+    ret
+endp
+
+CHAMAR_SETOR_DOIS proc
+
+    call LIMPAR_TELA
+    call PRINT_SETOR_DOIS
+    CALL LIMPAR_TELA
+    
+    CALL COMECAR_JOGO
+    ret
+endp
+
+CHAMAR_SETOR_TRES proc
+
+    call LIMPAR_TELA
+    call PRINT_SETOR_TRES
     CALL LIMPAR_TELA
     
     CALL COMECAR_JOGO
@@ -968,8 +1047,33 @@ PRINT_VOCE_PERDEU proc
     mov bp, offset logo_perdeu ; Text to print
     mov dh, 9 ; Line to print
     mov dl, 0 ; Column to print
-    mov cx, 304 ; Size of string printed
-    mov bl, 5 ; Color
+    mov cx, 250 ; Size of string printed
+    mov bl, 4 ; Color
+    
+    call PRINT_TEXT
+    
+    CALL DELAY_TELA_SETOR
+    
+    pop bx
+    pop cx
+    pop dx
+    pop bp
+    ret
+    ret
+endp
+
+PRINT_VOCE_GANHOU proc
+    
+    push bp
+    push dx
+    push cx
+    push bx
+
+    mov bp, offset logo_venceu; Text to print
+    mov dh, 9 ; Line to print
+    mov dl, 0 ; Column to print
+    mov cx, 164 ; Size of string printed
+    mov bl, 2 ; Color
     
     call PRINT_TEXT
     
@@ -989,6 +1093,15 @@ CHAMAR_VOCE_PERDEU proc
     call PRINT_VOCE_PERDEU
     ret
 endp
+
+CHAMAR_VOCE_GANHOU proc
+
+    call LIMPAR_TELA
+    call PRINT_VOCE_GANHOU
+    call SAIR_JOGO_PROC
+    ret
+endp
+
 
 PRINT_TEMPO_E_SCORE proc
     push bp
@@ -1379,49 +1492,6 @@ endp
 
 ;;;;;;;;;;;;;;;;;;;;;;
 
-COMECAR_JOGO proc
-    mov [tempo_restante], 60         ; Reinicia o tempo a 60 segundos
-    mov cx, 7000                     ; Configura um contador para um valor maior (~1 segundo)
-    
-    mov [contador_tiro], 100   ; Inicializa o contador do tiro
-    mov word ptr [posicao_atual_tiro], 0 ; Inicializa a posi??o do tiro como inativo
-
-    call POSICIONA_NAVES_INICIO_DO_JOGO
-    mov bx, posicao_central_nave
-    mov posicao_atual_nave, bx
-
-COMECAR_JOGO_LOOP:
-    call PRINT_TEMPO_E_SCORE         ; Atualiza a tela com o tempo e score
-
-    ; Verifica e executa o movimento da nave (input do teclado)
-    call CHECA_MOVIMENTO_NAVE
-    
-    call MOVER_TIRO
-
-    ; Reduz o contador de ciclos para o tempo
-    dec cx
-    jnz CONTINUA_JOGO                ; Se CX n?o chegou a zero, continua o jogo sem atualizar o tempo
-
-    ; Reseta o contador de ciclos e decrementa o tempo do jogo
-    mov cx, 7000                     ; Reinicia o contador (~1 segundo)
-    call DECREMENTAR_TEMPO           ; Decrementa o tempo do jogo
-
-    ; Verifica se o tempo acabou
-    mov ax, [tempo_restante]
-    cmp ax, 0
-    jne CONTINUA_JOGO
-
-    ; Caso o tempo tenha acabado, chama a tela de "Voc? Perdeu"
-    call CHAMAR_VOCE_PERDEU
-    jmp FIM_DO_JOGO
-
-CONTINUA_JOGO:
-    jmp COMECAR_JOGO_LOOP            ; Volta para o in?cio do loop principal
-
-FIM_DO_JOGO:
-    ret
-endp
-
 ;Limpa o buffer do teclado
 CLEAR_KEYBOARD_BUFFER proc
     mov ah, 01h 
@@ -1554,7 +1624,7 @@ MOVE_TIRO:
     jmp FIM_MOVER_TIRO
 
 APAGAR_TIRO:
-    ; ele nunca entra aqui
+    
     call REMOVER_TIRO
     mov posicao_atual_tiro, 0  ; Resetar a posi??o do tiro para 0, indicando que ele est? inativo
     mov coluna_atual_tiro, 52
@@ -1598,7 +1668,315 @@ CALCULA_POSICAO_DE_VIDEO:
     
     ret
 endp    
+
+
+;;;;;;;; inimigos
+
+
+; Movimenta a nave inimiga na dire??o correta com um contador de velocidade
+MOVIMENTO_GERAL_INIMIGO proc
+    ; Diminui o contador de velocidade da nave
+    dec [contador_velocidade_nave_inimiga]
+    jnz FIM_MOVIMENTO_GERAL_INIMIGO ; Se n?o chegou a zero, aguarda mais um ciclo
+
+    ; Reseta o contador de velocidade para atrasar o pr?ximo movimento
+    mov [contador_velocidade_nave_inimiga], 120 ; Ajuste para controlar a velocidade da nave
+
+    ; Chama a movimenta??o de acordo com a nave atual
+    call MOVIMENTO_NAVE_INIMIGA_JOGO
+
+    ; Verifica se a posi??o atual da nave inimiga ? 0
+    cmp [naveInimigaPosX], 17 ; coluna 17 ? o limite
+    je ZERAR_NAVES_INIMIGAS      ; Se a nave inimiga chegar no 0, zera as posi??es das naves
+
+    jmp FIM_MOVIMENTO_GERAL_INIMIGO
+
+ZERAR_NAVES_INIMIGAS:
+    ; Reseta a posi??o inicial da nave inimiga na extremidade direita
+    mov [naveInimigaPosX], 305
+    mov [naveInimigaPosY], 115
+
+    ; Remove a nave da tela em sua ?ltima posi??o
+    mov di, 115*320 + 17
+    call REMOVE_DESENHO
     
+    ; Decrementa o n?mero de naves plotadas
+    dec [quantidade_inimigos_plotados]
+    
+    ; Verifica se a quantidade de naves ainda ? maior que 0
+    jmp FIM_MOVIMENTO_GERAL_INIMIGO
+
+FIM_MOVIMENTO_GERAL_INIMIGO:
+    ret
+endp
+
+
+MOVIMENTO_NAVE_INIMIGA_JOGO proc
+    push ax
+    push bx
+    push cx
+    push dx
+
+    ; Inicializa as posi??es da nave
+    mov ax, [naveInimigaPosX]
+    mov bx, [naveInimigaPosY]
+
+MOVIMENTO_LOOP_INIMIGA_JOGO:
+    ; Verifica se a posi??o da nave est? dentro dos limites
+    cmp ax, 0     ; Verifica o limite esquerdo (0 - 15 largura da nave)
+    
+    jge MOVE_LEFT_JOGO
+
+    ; Se a nave inimiga atingir o limite esquerdo
+    jmp FIM_PROC_INIMIGA_JOGO ; Termina a rotina da nave inimiga
+
+MOVE_LEFT_JOGO:
+    ; Remove a nave da posi??o anterior
+    mov di, bx      ; Posi??o Y
+    shl di, 8      ; Desloca para a posi??o de 16 bits
+    mov dx, bx      ; Posi??o Y
+    shl dx, 6      ; Desloca para 64 bits (cada linha tem 320 pixels)
+    add di, dx      ; Adiciona o deslocamento da posi??o Y
+    add di, ax      ; Adiciona a posi??o X
+    call REMOVE_DESENHO ; Remove a nave da posi??o anterior
+    
+    ; Mover a nave para a esquerda
+    dec ax          ; Decrementa a posi??o X da nave
+
+    ; Atualiza as vari?veis de posi??o
+    mov [naveInimigaPosX], ax
+    mov [naveInimigaPosY], bx
+
+    ; Desenha a nave na nova posi??o
+    mov di, bx      ; Posi??o Y
+    shl di, 8      ; Desloca para a posi??o de 16 bits
+    mov dx, bx      ; Posi??o Y
+    shl dx, 6      ; Desloca para 64 bits (cada linha tem 320 pixels)
+    add di, dx      ; Adiciona o deslocamento da posi??o Y
+    add di, ax      ; Adiciona a posi??o X
+    call DESENHA_NAVE_INIMIGA ; Desenha a nave na nova posi??o
+
+    ; Chama a rotina de delay
+    ;call DELAY
+
+FIM_PROC_INIMIGA_JOGO: 
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+endp
+
+;Funcao que plota um objeto na extrema direita da tela.
+;SI: RECEBE O OFFSET DO DESENHO (asteroide, shield ou cura)
+;Retonar linha do objeto em dx
+PRINTA_OBJETO_DIREITA proc
+    push ax
+    push cx
+    push si
+    push di
+    push bx
+    xor bx, bx
+    xor dx, dx
+    call GERA_NUMERO_ALEATORIO
+    mov bx, 150
+    div bx
+    cmp dx, 11
+    ja PLOTAR_DESENHO
+    mov dx, 12
+    cmp dx, 145
+    jb PLOTAR_DESENHO
+    mov dx, 144
+    
+PLOTAR_DESENHO:
+    cmp dx, 0
+    je FIM_PRINTA_OBJETO_DIREITA
+    mov ax, dx                   ; Retorno da linha em DX
+
+    ; Salva a posi??o Y da nave inimiga
+    mov [naveInimigaPosY], dx    ; Guarda a linha (posi??o Y) em naveInimigaPosY
+    mov bx, 305                  ; Coluna inicial (posi??o X) para nave na ?ltima coluna
+    mov [naveInimigaPosX], bx    ; Guarda a posi??o X inicial da nave
+
+    ; Calcula o endere?o de tela da posi??o inicial
+    push dx
+    mov bx, 320                  ; linha * 320
+    mul bx
+    add ax, [naveInimigaPosX]    ; Adiciona coluna inicial (posi??o X)
+    xor di, di
+    mov di, ax
+    pop dx
+    call DESENHA_ELEMENTO
+FIM_PRINTA_OBJETO_DIREITA:
+    pop bx
+    pop di
+    pop si
+    pop cx
+    pop ax
+    ret
+endp
+    
+; Funcao que gera um numero aleatorio
+GERA_NUMERO_ALEATORIO proc
+    push dx
+    mov ah, 2Ch                  ; Hora da bios
+    int 21h
+    mov ax, dx                   ; Move para ax os ms retornados da interrupcao em dl
+    pop dx
+    ret
+endp
+
+REMOVER_NAVE_INIMIGA proc
+    ; Pega as posi??es da nave para remov?-la
+    mov ax, [naveInimigaPosX]                ; Pega a posi??o X da nave inimiga
+    mov bx, [naveInimigaPosY]                ; Pega a posi??o Y da nave inimiga
+
+    ; Calcula o endere?o de tela para a posi??o atual (X, Y)
+    mov di, bx                                ; Posi??es Y
+    shl di, 8                                 ; Desloca para a posi??o de 16 bits
+    mov dx, bx                                ; Posi??es Y
+    shl dx, 6                                 ; Desloca para 64 bits (cada linha tem 320 pixels)
+    add di, dx                                ; Adiciona o deslocamento de Y
+    add di, ax                                ; Adiciona a posi??o X
+    call REMOVE_DESENHO                      ; Remove a nave da tela
+
+    ret
+endp
+
+;;;;;;;;;;;;;
+
+BLOQUEIA_EXECUCAO_PROGRAMA proc
+    push cx
+    push dx
+    push ax
+    
+    mov ah, 86h
+    xor cx, cx
+    mov dx, 0c350h ; 50 ms
+    int 15h
+    
+    pop ax
+    pop dx
+    pop cx
+    ret
+endp
+
+; Fun??o principal de inicializa??o do jogo
+COMECAR_JOGO proc
+    mov [tempo_restante], 60              ; Reinicia o tempo a 60 segundos
+    mov cx, 7000                          ; Contador de 1 segundo
+
+    mov [contador_tiro], 100              ; Inicializa o contador de tiro
+    mov [contador_movimento_nave_inimiga], 500 ; Inicializa o contador da nave inimiga
+    mov [contador_velocidade_nave_inimiga], 120 ; Inicializa o contador de velocidade da nave
+
+    call POSICIONA_NAVES_INICIO_DO_JOGO
+    mov bx, posicao_central_nave
+    mov posicao_atual_nave, bx
+    
+COMECAR_JOGO_LOOP:
+    call PRINT_TEMPO_E_SCORE              ; Atualiza o tempo e score na tela
+
+    ; Verifica e executa o movimento da nave do jogador (input do teclado)
+    call CHECA_MOVIMENTO_NAVE
+
+    ; Movimenta o tiro
+    call MOVER_TIRO
+
+    ; Verifica a posi??o da nave inimiga antes de desenhar ou mover
+    cmp [naveInimigaPosX], 18              ; Verifica se a nave est? na extremidade esquerda
+    je NOVA_NAVE                           ; Se chegou a 0, desenha uma nova nave
+
+    ; Caso contr?rio, move a nave existente
+    call MOVIMENTO_GERAL_INIMIGO
+    jmp CONTINUAR_LOOP                     ; Pula para continuar o loop principal
+
+NOVA_NAVE:
+    mov ax, [quantidade_inimigos_plotados]  ; Carrega a quantidade de naves plotadas
+    cmp ax, [quantidade_inimigos_setor_1]    ; Compara com o limite de 10 naves
+    je FIM_NOVA_NAVE                         ; Se j? tiver 10 naves, n?o cria uma nova nave
+    
+    ; Caso contr?rio, pegar a posi??o atual da nave inimiga e remover ela
+    call REMOVER_NAVE_INIMIGA
+    
+    ; Caso contr?rio, plota uma nova nave
+    mov si, offset nave_inimiga              ; Offset do desenho da nave inimiga
+    call PRINTA_OBJETO_DIREITA               ; Desenha uma nova nave
+    
+    ; Incrementa a quantidade de naves plotadas
+    inc [quantidade_inimigos_plotados]
+    
+FIM_NOVA_NAVE:
+    ; Caso contr?rio, pegar a posi??o atual da nave inimiga e remover ela
+    call REMOVER_NAVE_INIMIGA
+    
+    mov ax, [quantidade_inimigos_plotados]  ; Carrega a quantidade de naves plotadas
+    cmp ax, [quantidade_inimigos_setor_1]    ; Compara com o limite de 10 naves
+    jle ADICIONA_SCORE
+    
+    jmp CONTINUAR_LOOP                       ; Continua o loop principal
+    
+ADICIONA_SCORE:
+    
+    add score_jogador, 100
+    jmp CONTINUAR_LOOP                       ; Continua o loop principal
+    
+CONTINUAR_LOOP:
+    ; Reduz o contador de ciclos para o tempo
+    dec cx
+    jnz CONTINUA_JOGO                     ; Se CX n?o chegou a zero, continua o jogo sem atualizar o tempo
+
+    ; Reseta o contador de ciclos e decrementa o tempo do jogo
+    mov cx, 7000                          ; Reinicia o contador (~1 segundo)
+    call DECREMENTAR_TEMPO                ; Decrementa o tempo do jogo
+
+    ; Verifica se o tempo acabou
+    mov ax, [tempo_restante]
+    cmp ax, 0
+    jne CONTINUA_JOGO
+
+    ; Caso o tempo tenha acabado, chama a tela de "Voc? Perdeu"
+    cmp [setor_atual], 1
+    je IR_PARA_SETOR_DOIS
+    
+    cmp [setor_atual], 2
+    je IR_PARA_SETOR_TRES
+    
+    cmp [setor_atual], 3
+    je FIM_DO_JOGO
+   
+CONTINUA_JOGO:
+    jmp COMECAR_JOGO_LOOP                 ; Volta para o in?cio do loop principal
+
+IR_PARA_SETOR_DOIS:
+    
+    call BLOQUEIA_EXECUCAO_PROGRAMA
+    inc setor_atual
+    mov [quantidade_inimigos_setor_1], 15
+    mov quantidade_inimigos_plotados, 1 
+    call CHAMAR_SETOR_DOIS
+    
+IR_PARA_SETOR_TRES:
+    
+    call BLOQUEIA_EXECUCAO_PROGRAMA
+    inc setor_atual
+    mov [quantidade_inimigos_setor_1], 20
+    mov quantidade_inimigos_plotados, 1
+    call CHAMAR_SETOR_TRES
+    
+FIM_DO_JOGO:
+    
+    call BLOQUEIA_EXECUCAO_PROGRAMA
+    call CHAMAR_VOCE_GANHOU
+    ret
+endp
+
+SAIR_JOGO_PROC proc
+    mov ah, 4Ch     ; Function to terminate the program
+    int 21h         ; Execute
+    ret
+endp
+
 INICIO:
 
     mov ax, @data
@@ -1618,7 +1996,6 @@ INICIO:
     call CHAMAR_SETOR_UM
 
     SAIR_JOGO:
-    mov ah, 4Ch     ; Function to terminate the program
-    int 21h         ; Execute
+    call SAIR_JOGO_PROC
     
 end INICIO
