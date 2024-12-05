@@ -61,9 +61,6 @@ model small
     delay_inimigos_setor_um dw 6000 ; 6 segundos -> 60s / 10 inimigos = 1 inimigo a cada 6 s
     contador_movimento_nave_inimiga dw 500  ; Controla a frequ?ncia de movimento da nave inimiga
     contador_velocidade_nave_inimiga dw 120 ; Inicializa com um valor para ajustar a velocidade da nave
-    quantidade_inimigos_setor_1 dw 10
-    quantidade_inimigos_plotados dw 1
-    finalizou_naves dw 0
     ;;;;;;;;
     
     setor_atual dw 1
@@ -1687,7 +1684,7 @@ MOVIMENTO_GERAL_INIMIGO proc
     call MOVIMENTO_NAVE_INIMIGA_JOGO
 
     ; Verifica se a posi??o atual da nave inimiga ? 0
-    cmp [naveInimigaPosX], 45 ; coluna 17 ? o limite
+    cmp [naveInimigaPosX], 45 ; ?ltima coluna nave inimiga
     je ZERAR_NAVES_INIMIGAS      ; Se a nave inimiga chegar no 0, zera as posi??es das naves
 
     jmp FIM_MOVIMENTO_GERAL_INIMIGO
@@ -1698,11 +1695,8 @@ ZERAR_NAVES_INIMIGAS:
     mov [naveInimigaPosY], 115
 
     ; Remove a nave da tela em sua ?ltima posi??o
-    mov di, 115*320 + 45
+    mov di, 115*320 + 45 ; ?ltima coluna nave inimiga
     call REMOVE_DESENHO
-    
-    ; Decrementa o n?mero de naves plotadas
-    dec [quantidade_inimigos_plotados]
     
     ; Verifica se a quantidade de naves ainda ? maior que 0
     jmp FIM_MOVIMENTO_GERAL_INIMIGO
@@ -1885,7 +1879,7 @@ COMECAR_JOGO_LOOP:
     call MOVER_TIRO
 
     ; Verifica a posi??o da nave inimiga antes de desenhar ou mover
-    cmp [naveInimigaPosX], 46              ; Verifica se a nave est? na extremidade esquerda
+    cmp [naveInimigaPosX], 46              ; Verifica se a nave est? na extremidade esquerda (?ltima coluna nave inimiga + 1)
     je NOVA_NAVE                           ; Se chegou a 0, desenha uma nova nave
 
     ; Caso contr?rio, move a nave existente
@@ -1893,34 +1887,16 @@ COMECAR_JOGO_LOOP:
     jmp CONTINUAR_LOOP                     ; Pula para continuar o loop principal
 
 NOVA_NAVE:
-    mov ax, [quantidade_inimigos_plotados]  ; Carrega a quantidade de naves plotadas
-    cmp ax, [quantidade_inimigos_setor_1]    ; Compara com o limite de 10 naves
-    je FIM_NOVA_NAVE                         ; Se j? tiver 10 naves, n?o cria uma nova nave
-    
     ; Caso contr?rio, pegar a posi??o atual da nave inimiga e remover ela
     call REMOVER_NAVE_INIMIGA
+    add score_jogador, 100
     
     ; Caso contr?rio, plota uma nova nave
     mov si, offset nave_inimiga              ; Offset do desenho da nave inimiga
     call PRINTA_OBJETO_DIREITA               ; Desenha uma nova nave
     
-    ; Incrementa a quantidade de naves plotadas
-    inc [quantidade_inimigos_plotados]
-    
-FIM_NOVA_NAVE:
-    ; Caso contr?rio, pegar a posi??o atual da nave inimiga e remover ela
-    call REMOVER_NAVE_INIMIGA
-    
-    mov ax, [quantidade_inimigos_plotados]  ; Carrega a quantidade de naves plotadas
-    cmp ax, [quantidade_inimigos_setor_1]    ; Compara com o limite de 10 naves
-    jle ADICIONA_SCORE
-    
-    jmp CONTINUAR_LOOP                       ; Continua o loop principal
-    
-ADICIONA_SCORE:
-    
-    add score_jogador, 100
-    jmp CONTINUAR_LOOP                       ; Continua o loop principal
+    ; Continua o loop principal
+    jmp CONTINUAR_LOOP
     
 CONTINUAR_LOOP:
     ; Reduz o contador de ciclos para o tempo
@@ -1953,16 +1929,12 @@ IR_PARA_SETOR_DOIS:
     
     call BLOQUEIA_EXECUCAO_PROGRAMA
     inc setor_atual
-    mov [quantidade_inimigos_setor_1], 15
-    mov quantidade_inimigos_plotados, 1 
     call CHAMAR_SETOR_DOIS
     
 IR_PARA_SETOR_TRES:
     
     call BLOQUEIA_EXECUCAO_PROGRAMA
     inc setor_atual
-    mov [quantidade_inimigos_setor_1], 20
-    mov quantidade_inimigos_plotados, 1
     call CHAMAR_SETOR_TRES
     
 FIM_DO_JOGO:
