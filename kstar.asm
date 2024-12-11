@@ -3,14 +3,15 @@ model small
 .stack 100H
 
 .data
+    ; --- se??o 1: codigos ASCII --- 
     upArrow equ 48h
     downArrow equ 50h
     accept equ 1Ch ; enter
     
-    ; codigos ASCII
     CR equ 13
     LF equ 10
     
+    ; --- se??o 2: configuracoes --- 
     jogar db "JOGAR"
     sair db "SAIR"
     tempo db "TEMPO: "
@@ -58,6 +59,7 @@ model small
     quantidade_vidas dw 9
     setor_atual dw 1 ; setor atual do jogo, inicia no 1
   
+    ; --- se??o 3: sprites ---    
     ; desenho da nave
     nave_principal      db 0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0 , 0 , 0 , 0 , 0 , 0  
                         db 0 , 0 ,0Fh,0Fh, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
@@ -168,7 +170,8 @@ model small
                          db 0 , 0 ,4,4, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
                          db 0 , 0 ,4,4, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
                          db 4,4,4,4,4,4,4,4,4, 0 , 0 , 0 , 0 , 0 , 0      
-                         
+             
+    ; --- se??o 4: artes e cen?rio ---
     ; 7 x 36 = 252                   
     gameName db "         _  __   ___ _            ", CR, LF
              db "        | |/ /__/ __| |_ __ _ _ _ ", CR, LF
