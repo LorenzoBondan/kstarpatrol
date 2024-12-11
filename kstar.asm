@@ -1735,6 +1735,11 @@ GERA_NUMERO_ALEATORIO proc
     mov ah, 2Ch ; hora da bios
     int 21h
     mov ax, dx ; move para ax os ms retornados da interrupcao em dl
+    
+    ; gerar maior 'aleatoriedade'
+    xor cx, ax ; introduz um deslocamento usando cx
+    add ax, cx ; adiciona o deslocamento
+
     pop dx
     ret
 endp
