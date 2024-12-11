@@ -1,6 +1,6 @@
 model small
 
-.stack 200H ; pilha de 512 bytes (200H)
+.stack 100H
 
 .data
     upArrow equ 48h
