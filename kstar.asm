@@ -3,7 +3,7 @@ model small
 .stack 100H
 
 .data
-    ; --- se??o 1: codigos ASCII --- 
+    ; --- secao 1: codigos ASCII --- 
     upArrow equ 48h
     downArrow equ 50h
     accept equ 1Ch ; enter
@@ -11,7 +11,7 @@ model small
     CR equ 13
     LF equ 10
     
-    ; --- se??o 2: configuracoes --- 
+    ; --- secao 2: configuracoes --- 
     jogar db "JOGAR"
     sair db "SAIR"
     tempo db "TEMPO: "
@@ -45,6 +45,7 @@ model small
     tempo_delay_tela_setor_parte_alta dw 003Dh ; parte alta de 4.000.000 microssegundos (4 segundos)
     tempo_delay_tela_setor_parte_baixa dw 0900h ; parte baixa de 4.000.000 microssegundos (4 segundos)
     tempo_restante dw 60 ; comeca com 60 segundos
+    tempo_total dw 60
     
     score_jogador dw 0
     
@@ -59,7 +60,7 @@ model small
     quantidade_vidas dw 9
     setor_atual dw 1 ; setor atual do jogo, inicia no 1
   
-    ; --- se??o 3: sprites ---    
+    ; --- secao 3: sprites ---    
     ; desenho da nave
     nave_principal      db 0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0 , 0 , 0 , 0 , 0 , 0  
                         db 0 , 0 ,0Fh,0Fh, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
@@ -171,7 +172,7 @@ model small
                          db 0 , 0 ,4,4, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  
                          db 4,4,4,4,4,4,4,4,4, 0 , 0 , 0 , 0 , 0 , 0      
              
-    ; --- se??o 4: artes e cen?rio ---
+    ; --- secao 4: artes e cenario ---
     ; 7 x 36 = 252                   
     gameName db "         _  __   ___ _            ", CR, LF
              db "        | |/ /__/ __| |_ __ _ _ _ ", CR, LF
@@ -1781,7 +1782,8 @@ endp
 
 ; funcao principal de inicializacao do jogo
 COMECAR_JOGO proc
-    mov [tempo_restante], 60 ; reinicia o tempo a 60 segundos
+    mov ax, tempo_total
+    mov [tempo_restante], ax; reinicia o tempo
     mov cx, 7000 ; contador de 1 segundo
 
     mov [contador_tiro], 100 ; inicializa o contador de tiro
