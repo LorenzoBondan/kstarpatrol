@@ -16,9 +16,6 @@ model small
     tempo db "TEMPO: "
     score db "SCORE: "
     
-    screenWidth equ 320
-    screenHeight equ 200
-    
     ; caracteres de borda
     cornerTopLeft db 218
     cornerTopRight db 191
@@ -44,7 +41,6 @@ model small
     
     nave_atual db 0 ; 0 para a nave aliada, 1 para a nave inimiga
     
-    tempo_delay_tela_setor dw 4 ; 4 segundos 
     tempo_delay_tela_setor_parte_alta dw 003Dh ; parte alta de 4.000.000 microssegundos (4 segundos)
     tempo_delay_tela_setor_parte_baixa dw 0900h ; parte baixa de 4.000.000 microssegundos (4 segundos)
     tempo_restante dw 60 ; comeca com 60 segundos
@@ -55,7 +51,7 @@ model small
     tempo_str db "00", 0
     score_jogador_str db "", 0
     
-    delay_inimigos_setor_um dw 6000 ; 6 segundos -> 60s / 10 inimigos = 1 inimigo a cada 6 s
+    delay_inimigos_setor_um dw 6000
     contador_movimento_nave_inimiga dw 500  ; controla a frequencia de movimento da nave inimiga
     contador_velocidade_nave_inimiga dw 120 ; inicializa com um valor para ajustar a velocidade da nave
     
@@ -1440,7 +1436,7 @@ ATIRAR:
     call CRIA_TIRO
    
 FIM_MOVIMENTO_NAVE:
-    call CLEAR_KEYBOARD_BUFFER
+    call LIMPAR_BUFFER
     
     pop di
     pop si
@@ -1452,17 +1448,17 @@ FIM_MOVIMENTO_NAVE:
 endp
 
 ; limpa o buffer do teclado
-CLEAR_KEYBOARD_BUFFER proc
+LIMPAR_BUFFER proc
     mov ah, 01h 
     int 16h       
 
-    jz BufferCleared  
+    jz BUFFER_LIMPO  
     mov ah, 00h   
     int 16h       
 
-    jmp CLEAR_KEYBOARD_BUFFER
+    jmp LIMPAR_BUFFER
 
-BufferCleared:
+BUFFER_LIMPO:
     ret
 endp
 
@@ -1688,14 +1684,19 @@ PRINTA_OBJETO_DIREITA proc
     push di
     push bx
     
+    ; gerar uma linha aleatoria
     xor bx, bx
     xor dx, dx
     call GERA_NUMERO_ALEATORIO
-    mov bx, 150
+    mov bx, 150 ; o numero eh dividido por 150 para obter um numero de linha (dx) dentro do intervalo permitido
     div bx
+    
+    ; se o numero gerado for menor que 11, eh ajustado para 12 para garantir visibilidade
     cmp dx, 11
     ja PLOTAR_DESENHO
     mov dx, 12
+    
+    ; se o numero gerado for maior que 145, eh ajustado para 144 para garantir visibilidade
     cmp dx, 145
     jb PLOTAR_DESENHO
     mov dx, 144
